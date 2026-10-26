@@ -14,7 +14,7 @@ Capitanía de Tenis administre bloqueos. Reemplaza a Simple Solution.
 - Todos los jugadores tienen que tener **carnet de tenis vigente**.
 - Nunca puede haber dos reservas superpuestas en la misma cancha, aunque dos socios reserven en el mismo segundo.
 - El titular puede **cancelar en cualquier momento**. La Capitanía también.
-- La Capitanía tiene su propio panel en `/capitania` (solo cuentas con rol `capitania`): ve la grilla del día, bloquea franjas (puntuales o semanales) y puede cancelar reservas.
+- La Capitanía tiene su propio panel en `/capitania` (solo cuentas con rol `capitania`): ve la grilla del día, bloquea franjas (puntuales o semanales) y puede cancelar reservas. Si un bloqueo pisa reservas, el panel las lista y pide confirmar: al confirmar se cancelan y los socios lo ven en "Mis reservas" con el motivo.
 - Login: número de socio + DNI. 5 intentos fallidos bloquean 15 minutos.
 
 Horarios y ventana de habilitación se cambian en la tabla `config` (Supabase → Table Editor).
@@ -25,7 +25,8 @@ Horarios y ventana de habilitación se cambian en la tabla `config` (Supabase �
 1. En [supabase.com](https://supabase.com) → proyecto → **SQL Editor** → **New query**.
 2. Pegar y correr `supabase/migrations/20261026000000_inicial.sql`.
 3. Pegar y correr `supabase/migrations/20261026010000_companeros_frecuentes.sql` (compañeros frecuentes).
-4. (Opcional, para probar) pegar y correr `supabase/seed_demo.sql`: crea socios ficticios.
+4. Pegar y correr `supabase/migrations/20261026020000_bloqueos_sobre_reservas.sql` (bloqueos que pisan reservas).
+5. (Opcional, para probar) pegar y correr `supabase/seed_demo.sql`: crea socios ficticios.
 
 Socios de prueba (número / DNI):
 

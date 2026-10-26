@@ -40,7 +40,16 @@ export const api = {
   misReservas: (token) => rpc('mis_reservas', { p_token: token }),
   cancelar: (token, id) => rpc('cancelar_reserva', { p_token: token, p_id: id }),
   panelDia: (token, fecha) => rpc('panel_dia', { p_token: token, p_fecha: fecha }),
-  crearBloqueo: (token, b) =>
+  previsualizarBloqueo: (token, b) =>
+    rpc('previsualizar_bloqueo', {
+      p_token: token,
+      p_canchas: b.canchas,
+      p_fecha: b.fecha,
+      p_desde: b.desde,
+      p_hasta: b.hasta,
+      p_semanal: b.semanal,
+    }),
+  crearBloqueo: (token, b, cancelarReservas = false) =>
     rpc('crear_bloqueo', {
       p_token: token,
       p_canchas: b.canchas,
@@ -49,6 +58,7 @@ export const api = {
       p_hasta: b.hasta,
       p_motivo: b.motivo,
       p_semanal: b.semanal,
+      p_cancelar_reservas: cancelarReservas,
     }),
   borrarBloqueo: (token, id) => rpc('borrar_bloqueo', { p_token: token, p_id: id }),
 }

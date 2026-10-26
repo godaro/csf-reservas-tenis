@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { api } from '../lib/api'
-import { fechaLarga, hoy } from '../lib/fechas'
+import { fechaCorta, fechaLarga, hoy } from '../lib/fechas'
 import { Aviso, Cargando, Titulo } from '../componentes/ui'
 
 const MOTIVOS = ['Escuela de Tenis', 'Clases', 'Interclubes', 'Torneo interno', 'Mantenimiento', 'Lluvia']
@@ -27,6 +27,9 @@ export default function Capitania({ sesion, onError }) {
   const [motivo, setMotivo] = useState(MOTIVOS[0])
   const [semanal, setSemanal] = useState(false)
   const [guardando, setGuardando] = useState(false)
+  const [conflicto, setConflicto] = useState(null) // { datos, afectadas: [...] }
+  // Si cambian los datos del formulario, el aviso anterior ya no aplica
+  useEffect(() => { setConflicto(null) }, [canchas, desde, hasta, motivo, semanal, fecha])
 
   const manejar = useCallback((e) => (e.codigo === 'SESION' ? onError(e) : setError(e.message)), [onError])
 
@@ -46,20 +49,42 @@ export default function Capitania({ sesion, onError }) {
   const alternarCancha = (n) =>
     setCanchas((c) => (c.includes(n) ? c.filter((x) => x !== n) : [...c, n].sort((a, b) => a - b)))
 
+  // Paso 1: revisar si el bloqueo pisa reservas. Si no pisa nada, se crea directo.
   async function bloquear(e) {
     e.preventDefault()
     setGuardando(true)
     setError('')
     setOk('')
+    setConflicto(null)
+    const datos = { canchas, fecha, desde, hasta, motivo, semanal }
     try {
-      const r = await api.crearBloqueo(sesion.token, { canchas, fecha, desde, hasta, motivo, semanal })
-      setOk(r.reservas_afectadas > 0
-        ? `Bloqueo creado. Ojo: pisa ${r.reservas_afectadas} reserva(s) de socios; revisalas en la grilla.`
+      const afectadas = await api.previsualizarBloqueo(sesion.token, datos)
+      if (afectadas.length > 0) setConflicto({ datos, afectadas })
+      else await crear(datos, false)
+    } catch (err) {
+      manejar(err)
+    } finally {
+      setGuardando(false)
+    }
+  }
+
+  // Paso 2: crear el bloqueo (y, si se confirmó, cancelar las reservas que pisa)
+  async function crear(datos, cancelarReservas) {
+    setGuardando(true)
+    try {
+      const r = await api.crearBloqueo(sesion.token, datos, cancelarReservas)
+      setOk(r.reservas_canceladas > 0
+        ? `Bloqueo creado. Se ${r.reservas_canceladas === 1 ? 'canceló 1 reserva' : `cancelaron ${r.reservas_canceladas} reservas`}; los socios lo ven en "Mis reservas".`
         : 'Bloqueo creado.')
+      setConflicto(null)
       setCanchas([])
       cargar()
     } catch (err) {
-      manejar(err)
+      // Si entre el aviso y la confirmación alguien reservó, volvemos a mostrar la lista actualizada
+      if (err.codigo === 'CONFLICTO') {
+        const afectadas = await api.previsualizarBloqueo(sesion.token, datos).catch(() => [])
+        setConflicto({ datos, afectadas })
+      } else manejar(err)
     } finally {
       setGuardando(false)
     }
@@ -132,7 +157,31 @@ export default function Capitania({ sesion, onError }) {
             <input type="checkbox" checked={semanal} onChange={(e) => setSemanal(e.target.checked)} className="size-4.5 accent-azul" />
             Repetir todas las semanas (mismo día y horario)
           </label>
-          <button disabled={guardando || canchas.length === 0}
+          {conflicto && (
+            <div role="alert" className="flex flex-col gap-3 rounded-xl border border-[#f2d3a6] bg-[#fff4e5] p-3.5 text-[#4a3a22]">
+              <strong className="text-[15px]">
+                Este bloqueo pisa {conflicto.afectadas.length === 1 ? '1 reserva' : `${conflicto.afectadas.length} reservas`} de socios:
+              </strong>
+              <ul className="flex flex-col gap-1.5 text-[14px]">
+                {conflicto.afectadas.map((a) => (
+                  <li key={a.id}>
+                    <strong>Cancha {a.cancha}</strong> · {fechaCorta(a.fecha)} · {a.hora_inicio} a {a.hora_fin} · {a.jugadores}
+                  </li>
+                ))}
+              </ul>
+              <p className="text-[13px]">Si seguís, esas reservas se cancelan y los socios lo ven en “Mis reservas” con el motivo.</p>
+              <div className="flex flex-wrap gap-2">
+                <button type="button" disabled={guardando} onClick={() => crear(conflicto.datos, true)}
+                  className="min-h-11 rounded-lg bg-error px-4 font-bold text-white disabled:opacity-60">
+                  {guardando ? 'Guardando…' : `Bloquear y cancelar ${conflicto.afectadas.length === 1 ? 'la reserva' : 'las reservas'}`}
+                </button>
+                <button type="button" onClick={() => setConflicto(null)} className="min-h-11 rounded-lg px-4 font-bold text-[#8a4b00]">
+                  Volver
+                </button>
+              </div>
+            </div>
+          )}
+          <button disabled={guardando || canchas.length === 0 || !!conflicto}
             className="h-12 rounded-xl bg-azul font-bold text-white disabled:bg-apagado disabled:text-gris">
             {guardando ? 'Guardando…' : canchas.length === 0 ? 'Elegí al menos una cancha' : 'Bloquear franja'}
           </button>
