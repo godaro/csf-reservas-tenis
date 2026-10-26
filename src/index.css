@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+/* Colores y tipografías del Manual de Marca del Club */
+@theme {
+  --color-verde: #09582d;
+  --color-verde-oscuro: #06401f;
+  --color-verde-claro: #e3efe7;
+  --color-azul: #18305b;
+  --color-azul-claro: #e6ebf4;
+  --color-dorado: #d0a966;
+  --color-fondo: #f6f7f4;
+  --color-tinta: #14211a;
+  --color-gris: #5b6660;
+  --color-borde: #d5dbd6;
+  --color-apagado: #eceeea;
+  --color-error: #b42318;
+
+  --font-display: "Oswald", "Arial Narrow", sans-serif;
+  --font-sans: "PT Sans", system-ui, sans-serif;
+}
+
+html,
+body {
+  background: var(--color-fondo);
+  color: var(--color-tinta);
+  font-family: var(--font-sans);
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:not(:disabled) {
+  cursor: pointer;
+}
