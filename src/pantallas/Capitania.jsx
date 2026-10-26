@@ -68,13 +68,20 @@ export default function Capitania({ sesion, onError }) {
   const ultimo = useRef(0)
   const cargar = useCallback(() => {
     const id = ++ultimo.current
-    setError('')
-    api.panelDia(sesion.token, fecha)
-      .then((p) => id === ultimo.current && setPanel(p))
+    return api.panelDia(sesion.token, fecha)
+      .then((p) => { if (id === ultimo.current) { setPanel(p); setError('') } })
       .catch((e) => id === ultimo.current && manejar(e))
   }, [sesion.token, fecha, manejar])
 
   useEffect(() => { cargar() }, [cargar])
+
+  // Se actualiza solo: cada 30 segundos y cada vez que se vuelve a la pestaña
+  useEffect(() => {
+    const t = setInterval(() => { if (!document.hidden) cargar() }, 30000)
+    const alVolver = () => { if (!document.hidden) cargar() }
+    document.addEventListener('visibilitychange', alVolver)
+    return () => { clearInterval(t); document.removeEventListener('visibilitychange', alVolver) }
+  }, [cargar])
   const panelVisible = panel?.fecha === fecha ? panel : null
 
   const alternarCancha = (n) =>
@@ -109,7 +116,7 @@ export default function Capitania({ sesion, onError }) {
         : 'Bloqueo creado.')
       setConflicto(null)
       setCanchas([])
-      cargar()
+      await cargar()
     } catch (err) {
       // Si entre el aviso y la confirmación alguien reservó, volvemos a mostrar la lista actualizada
       if (err.codigo === 'CONFLICTO') {
@@ -124,10 +131,13 @@ export default function Capitania({ sesion, onError }) {
   async function borrar(g) {
     const donde = g.canchas.length === 1 ? `la cancha ${g.canchas[0]}` : `las canchas ${rangos(g.canchas)}`
     if (!window.confirm(`¿Borrar el bloqueo "${g.motivo}" de ${donde}${g.semanal ? ' (todas las semanas)' : ''}?\n\nLas reservas que se hayan cancelado por este bloqueo no se recuperan.`)) return
+    setError('')
+    setOk('')
     try {
       await Promise.all(g.ids.map((id) => api.borrarBloqueo(sesion.token, id)))
-      cargar()
-    } catch (e) { manejar(e) }
+      await cargar()
+      setOk(`Bloqueo "${g.motivo}" borrado.`)
+    } catch (e) { manejar(e); cargar() }
   }
 
   // Libera todos los bloqueos puntuales del día (los semanales se mantienen)
@@ -141,14 +151,20 @@ export default function Capitania({ sesion, onError }) {
     setOk('')
     try {
       await Promise.all(puntuales.map((b) => api.borrarBloqueo(sesion.token, b.id)))
+      await cargar()
       setOk('Canchas desbloqueadas.')
-      cargar()
-    } catch (e) { manejar(e) }
+    } catch (e) { manejar(e); cargar() }
   }
 
   async function cancelarReserva(celda, cancha, horaTxt) {
     if (!window.confirm(`Cancha ${cancha} · ${horaTxt}\n${celda.detalle}\n\n¿Cancelar esta reserva?`)) return
-    try { await api.cancelar(sesion.token, celda.reserva_id); cargar() } catch (e) { manejar(e) }
+    setError('')
+    setOk('')
+    try {
+      await api.cancelar(sesion.token, celda.reserva_id)
+      await cargar()
+      setOk(`Reserva de la cancha ${cancha} cancelada.`)
+    } catch (e) { manejar(e); cargar() }
   }
 
   return (
@@ -176,55 +192,6 @@ export default function Capitania({ sesion, onError }) {
       {error && <Aviso tipo="error">{error}</Aviso>}
       {ok && <Aviso>{ok}</Aviso>}
 
-      <section className="flex flex-col gap-3 rounded-2xl border border-[#f2d3a6] bg-[#fff8ee] p-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-col">
-            <h2 className="text-lg font-bold">Cerrar todas las canchas</h2>
-            <span className="text-[14px] text-gris">
-              {diaTerminado ? 'Ya terminó el horario de hoy.'
-                : esHoy ? `Desde ahora (${desdeCierre}) hasta el cierre · cancela las reservas que queden.`
-                  : `Todo el ${fechaLarga(fecha)} · cancela todas las reservas del día.`}
-            </span>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            {['Lluvia', 'Mantenimiento'].map((m) => (
-              <button key={m} type="button" onClick={() => setCierreMotivo(m)} aria-pressed={cierreMotivo === m}
-                className={`min-h-11 rounded-full border-[1.5px] px-4 font-bold ${cierreMotivo === m ? 'border-[#8a4b00] bg-[#8a4b00] text-white' : 'border-borde bg-white text-tinta'}`}>
-                {m}
-              </button>
-            ))}
-            <button type="button" onClick={cerrarDia} disabled={guardando || diaTerminado || !!cierre}
-              className="min-h-11 rounded-xl bg-[#8a4b00] px-4 font-bold text-white disabled:bg-apagado disabled:text-gris">
-              Cerrar canchas
-            </button>
-          </div>
-        </div>
-        {cierre && (
-          <div role="alert" className="flex flex-col gap-3 rounded-xl border border-[#f2d3a6] bg-white p-3.5 text-[#4a3a22]">
-            <strong className="text-[15px]">
-              Se cierran las 15 canchas por {cierre.datos.motivo.toLowerCase()}, de {cierre.datos.desde} a {cierre.datos.hasta}.
-              {' '}{cierre.afectadas.length === 0 ? 'No hay reservas para cancelar.'
-                : cierre.afectadas.length === 1 ? 'Se cancela 1 reserva:' : `Se cancelan ${cierre.afectadas.length} reservas:`}
-            </strong>
-            {cierre.afectadas.length > 0 && (
-              <ul className="flex max-h-48 flex-col gap-1 overflow-y-auto text-[14px]">
-                {cierre.afectadas.map((a) => (
-                  <li key={a.id}><strong>Cancha {a.cancha}</strong> · {a.hora_inicio} a {a.hora_fin} · {a.jugadores}</li>
-                ))}
-              </ul>
-            )}
-            <div className="flex flex-wrap gap-2">
-              <button type="button" disabled={guardando} onClick={confirmarCierre}
-                className="min-h-11 rounded-lg bg-error px-4 font-bold text-white disabled:opacity-60">
-                {guardando ? 'Guardando…' : 'Confirmar cierre'}
-              </button>
-              <button type="button" onClick={() => setCierre(null)} className="min-h-11 rounded-lg px-4 font-bold text-[#8a4b00]">
-                Volver
-              </button>
-            </div>
-          </div>
-        )}
-      </section>
 
       <div className="flex flex-wrap gap-4 text-[13px] text-gris">
         <span className="inline-flex items-center gap-1.5"><span className="size-3.5 rounded border border-borde bg-white" />Libre</span>
@@ -323,6 +290,56 @@ export default function Capitania({ sesion, onError }) {
           ))}
         </div>
       </div>
+
+      <section className="flex flex-col gap-3 rounded-2xl border border-[#f2d3a6] bg-[#fff8ee] p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-col">
+            <h2 className="text-lg font-bold">Cerrar todas las canchas</h2>
+            <span className="text-[14px] text-gris">
+              {diaTerminado ? 'Ya terminó el horario de hoy.'
+                : esHoy ? `Desde ahora (${desdeCierre}) hasta el cierre · cancela las reservas que queden.`
+                  : `Todo el ${fechaLarga(fecha)} · cancela todas las reservas del día.`}
+            </span>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {['Lluvia', 'Mantenimiento'].map((m) => (
+              <button key={m} type="button" onClick={() => setCierreMotivo(m)} aria-pressed={cierreMotivo === m}
+                className={`min-h-11 rounded-full border-[1.5px] px-4 font-bold ${cierreMotivo === m ? 'border-[#8a4b00] bg-[#8a4b00] text-white' : 'border-borde bg-white text-tinta'}`}>
+                {m}
+              </button>
+            ))}
+            <button type="button" onClick={cerrarDia} disabled={guardando || diaTerminado || !!cierre}
+              className="min-h-11 rounded-xl bg-[#8a4b00] px-4 font-bold text-white disabled:bg-apagado disabled:text-gris">
+              Cerrar canchas
+            </button>
+          </div>
+        </div>
+        {cierre && (
+          <div role="alert" className="flex flex-col gap-3 rounded-xl border border-[#f2d3a6] bg-white p-3.5 text-[#4a3a22]">
+            <strong className="text-[15px]">
+              Se cierran las 15 canchas por {cierre.datos.motivo.toLowerCase()}, de {cierre.datos.desde} a {cierre.datos.hasta}.
+              {' '}{cierre.afectadas.length === 0 ? 'No hay reservas para cancelar.'
+                : cierre.afectadas.length === 1 ? 'Se cancela 1 reserva:' : `Se cancelan ${cierre.afectadas.length} reservas:`}
+            </strong>
+            {cierre.afectadas.length > 0 && (
+              <ul className="flex max-h-48 flex-col gap-1 overflow-y-auto text-[14px]">
+                {cierre.afectadas.map((a) => (
+                  <li key={a.id}><strong>Cancha {a.cancha}</strong> · {a.hora_inicio} a {a.hora_fin} · {a.jugadores}</li>
+                ))}
+              </ul>
+            )}
+            <div className="flex flex-wrap gap-2">
+              <button type="button" disabled={guardando} onClick={confirmarCierre}
+                className="min-h-11 rounded-lg bg-error px-4 font-bold text-white disabled:opacity-60">
+                {guardando ? 'Guardando…' : 'Confirmar cierre'}
+              </button>
+              <button type="button" onClick={() => setCierre(null)} className="min-h-11 rounded-lg px-4 font-bold text-[#8a4b00]">
+                Volver
+              </button>
+            </div>
+          </div>
+        )}
+      </section>
     </div>
   )
 }
