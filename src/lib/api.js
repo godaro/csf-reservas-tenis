@@ -52,8 +52,11 @@ export const api = {
   borrarBloqueo: (token, id) => rpc('borrar_bloqueo', { p_token: token, p_id: id }),
 }
 
-// Sesión guardada en el dispositivo
-const CLAVE = 'csf-tenis-sesion'
+// ¿Estamos en el panel de Capitanía (/capitania) o en la app de socios (/)?
+export const ES_PANEL = window.location.pathname.replace(/\/+$/, '') === '/capitania'
+
+// Sesión guardada en el dispositivo (separada para socio y para Capitanía)
+const CLAVE = ES_PANEL ? 'csf-tenis-sesion-capitania' : 'csf-tenis-sesion'
 
 export function leerSesion() {
   try {

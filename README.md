@@ -14,7 +14,7 @@ Capitanía de Tenis administre bloqueos. Reemplaza a Simple Solution.
 - Todos los jugadores tienen que tener **carnet de tenis vigente**.
 - Nunca puede haber dos reservas superpuestas en la misma cancha, aunque dos socios reserven en el mismo segundo.
 - El titular puede **cancelar en cualquier momento**. La Capitanía también.
-- La Capitanía bloquea franjas (puntuales o semanales) y puede cerrar por lluvia.
+- La Capitanía tiene su propio panel en `/capitania` (solo cuentas con rol `capitania`): ve la grilla del día, bloquea franjas (puntuales o semanales) y puede cancelar reservas.
 - Login: número de socio + DNI. 5 intentos fallidos bloquean 15 minutos.
 
 Horarios y ventana de habilitación se cambian en la tabla `config` (Supabase → Table Editor).
@@ -35,7 +35,7 @@ Socios de prueba (número / DNI):
 | Lucía Benítez | 99003 | 30333444 | |
 | Tomás Herrera | 99006 | 30666777 | sin carnet (no puede entrar) |
 | Juan Sosa | 99008 | 30888999 | carnet vencido |
-| Capitanía de Tenis | 99900 | 20000000 | ve el panel de Capitanía |
+| Capitanía de Tenis | 99900 | 20000000 | entra solo por `/capitania` |
 
 ### 2. Correr en la compu
 ```bash

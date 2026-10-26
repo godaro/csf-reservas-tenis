@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import { api, configurado, guardarSesion, leerSesion } from './lib/api'
+import { api, configurado, ES_PANEL, guardarSesion, leerSesion } from './lib/api'
 import Login from './pantallas/Login'
 import Agenda from './pantallas/Agenda'
 import ElegirCancha from './pantallas/ElegirCancha'
@@ -52,19 +52,22 @@ export default function App() {
     )
   }
 
-  if (!sesion) {
+  // Una sesión solo vale en su lugar: socios en "/", Capitanía en "/capitania"
+  const sesionValida = sesion && (sesion.rol === 'capitania') === ES_PANEL ? sesion : null
+
+  if (!sesionValida) {
     return (
-      <Marco>
-        {aviso && <div className="mb-4"><Aviso tipo="alerta">{aviso}</Aviso></div>}
-        <Login onIngresar={ingresar} />
+      <Marco ancho={ES_PANEL} panel={ES_PANEL}>
+        {aviso && <div className="mx-auto mb-4 max-w-md"><Aviso tipo="alerta">{aviso}</Aviso></div>}
+        <Login onIngresar={ingresar} modo={ES_PANEL ? 'capitania' : 'socio'} />
       </Marco>
     )
   }
 
-  // La cuenta de Capitanía solo administra: ve únicamente su panel, sin pestañas
-  if (sesion.rol === 'capitania') {
+  // Panel de Capitanía: solo administra, sin pestañas de reserva
+  if (ES_PANEL) {
     return (
-      <Marco sesion={sesion} onSalir={salir} ancho>
+      <Marco sesion={sesion} onSalir={salir} ancho panel>
         {aviso && <div className="mb-4"><Aviso tipo="error">{aviso}</Aviso></div>}
         <Capitania sesion={sesion} onError={onError} />
       </Marco>
@@ -102,7 +105,8 @@ export default function App() {
   )
 }
 
-function Marco({ children, sesion, onSalir, tabs, tabActiva, onTab, ancho }) {
+function Marco({ children, sesion, onSalir, tabs, tabActiva, onTab, ancho, panel }) {
+  if (panel) document.title = 'Panel de Capitanía · Reservas de Tenis'
   return (
     <div className="flex min-h-dvh flex-col">
       <div className="flex h-1 shrink-0" aria-hidden="true">
@@ -115,7 +119,7 @@ function Marco({ children, sesion, onSalir, tabs, tabActiva, onTab, ancho }) {
             <path d="M5 9c5 3 7 9 5 17M29 9c-5 3-7 9-5 17" stroke="#18305B" strokeWidth="2.2" strokeLinecap="round" />
           </svg>
           <div className="flex min-w-0 flex-1 flex-col">
-            <span className="text-[11px] font-bold tracking-[0.12em] text-verde">CLUB SAN FERNANDO</span>
+            <span className="text-[11px] font-bold tracking-[0.12em] text-verde">CLUB SAN FERNANDO{panel ? ' · CAPITANÍA' : ''}</span>
             <span className="font-display text-[22px] font-semibold leading-tight">Reservas de Tenis</span>
           </div>
           {sesion && (
