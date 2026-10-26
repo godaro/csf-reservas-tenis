@@ -22,7 +22,7 @@ export default function App() {
   function ingresar(s) {
     guardarSesion(s)
     setSesion(s)
-    ir(s.rol === 'capitania' ? 'capitania' : 'agenda')
+    ir('agenda')
   }
 
   function salir() {
@@ -61,15 +61,24 @@ export default function App() {
     )
   }
 
+  // La cuenta de Capitanía solo administra: ve únicamente su panel, sin pestañas
+  if (sesion.rol === 'capitania') {
+    return (
+      <Marco sesion={sesion} onSalir={salir} ancho>
+        {aviso && <div className="mb-4"><Aviso tipo="error">{aviso}</Aviso></div>}
+        <Capitania sesion={sesion} onError={onError} />
+      </Marco>
+    )
+  }
+
   const tabs = [
     ['agenda', 'Reservar', IconoCalendario],
     ['mis', 'Mis reservas', IconoCheck],
-    ...(sesion.rol === 'capitania' ? [['capitania', 'Capitanía', IconoGrilla]] : []),
   ]
   const tabActiva = ['cancha', 'jugadores', 'ok'].includes(pantalla) ? 'agenda' : pantalla
 
   return (
-    <Marco sesion={sesion} onSalir={salir} ancho={pantalla === 'capitania'}
+    <Marco sesion={sesion} onSalir={salir}
       tabs={tabs} tabActiva={tabActiva} onTab={(t) => ir(t)}>
       {aviso && <div className="mb-4"><Aviso tipo="error">{aviso}</Aviso></div>}
 
@@ -89,7 +98,6 @@ export default function App() {
       )}
       {pantalla === 'ok' && resumen && <Confirmada resumen={resumen} onVerMis={() => ir('mis')} />}
       {pantalla === 'mis' && <MisReservas sesion={sesion} onError={onError} onReservar={() => ir('agenda')} />}
-      {pantalla === 'capitania' && sesion.rol === 'capitania' && <Capitania sesion={sesion} onError={onError} />}
     </Marco>
   )
 }
@@ -119,7 +127,7 @@ function Marco({ children, sesion, onSalir, tabs, tabActiva, onTab, ancho }) {
         </div>
       </header>
 
-      <main className={`mx-auto w-full flex-1 px-5 pb-28 pt-5 ${ancho ? 'max-w-6xl' : 'max-w-xl'}`}>{children}</main>
+      <main className={`mx-auto w-full flex-1 px-5 pt-5 ${tabs ? 'pb-28' : 'pb-10'} ${ancho ? 'max-w-6xl' : 'max-w-xl'}`}>{children}</main>
 
       {tabs && (
         <nav aria-label="Secciones" className="fixed inset-x-0 bottom-0 z-20 border-t border-borde bg-white pb-[env(safe-area-inset-bottom)]">
@@ -143,7 +151,4 @@ function IconoCalendario() {
 }
 function IconoCheck() {
   return <svg {...svg}><circle cx="12" cy="12" r="9" /><path d="M8 12.5l2.8 2.8L16.5 9.5" /></svg>
-}
-function IconoGrilla() {
-  return <svg {...svg}><rect x="3.5" y="3.5" width="17" height="17" rx="2" /><path d="M3.5 9.5h17M3.5 14.5h17M9.5 3.5v17M14.5 3.5v17" /></svg>
 }
