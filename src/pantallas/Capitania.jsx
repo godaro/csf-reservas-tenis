@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { api } from '../lib/api'
-import { fechaCorta, fechaLarga, hoy } from '../lib/fechas'
+import { fechaCorta, fechaLarga, hoy, sumarDias } from '../lib/fechas'
 import { Aviso, Cargando, Titulo } from '../componentes/ui'
 
 const MOTIVOS = ['Escuela de Tenis', 'Clases', 'Interclubes', 'Torneo interno', 'Mantenimiento', 'Lluvia']
@@ -104,11 +104,22 @@ export default function Capitania({ sesion, onError }) {
     <div className="flex flex-col gap-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <Titulo sub={fechaLarga(fecha)}>Panel de Capitanía</Titulo>
-        <label className="flex flex-col gap-1 text-[13px] font-bold">
-          Fecha
-          <input type="date" value={fecha} onChange={(e) => e.target.value && setFecha(e.target.value)}
-            className="h-11 rounded-xl border-[1.5px] border-borde bg-white px-3 text-base font-normal" />
-        </label>
+        <div className="flex items-center gap-2" role="group" aria-label="Elegir día">
+          <button type="button" onClick={() => setFecha(sumarDias(fecha, -1))} aria-label="Día anterior"
+            className="flex size-11 items-center justify-center rounded-xl border-[1.5px] border-borde bg-white text-tinta hover:border-verde">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg>
+          </button>
+          <button type="button" onClick={() => setFecha(hoy())} disabled={fecha === hoy()}
+            className="h-11 rounded-xl border-[1.5px] border-verde bg-white px-4 font-bold text-verde hover:bg-verde-claro disabled:border-borde disabled:text-gris disabled:hover:bg-white">
+            Hoy
+          </button>
+          <button type="button" onClick={() => setFecha(sumarDias(fecha, 1))} aria-label="Día siguiente"
+            className="flex size-11 items-center justify-center rounded-xl border-[1.5px] border-borde bg-white text-tinta hover:border-verde">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
+          </button>
+          <input type="date" value={fecha} onChange={(e) => e.target.value && setFecha(e.target.value)} aria-label="Ir a una fecha"
+            className="h-11 rounded-xl border-[1.5px] border-borde bg-white px-3 text-base" />
+        </div>
       </div>
 
       {error && <Aviso tipo="error">{error}</Aviso>}

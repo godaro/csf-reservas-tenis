@@ -53,5 +53,12 @@ export function hoy() {
   return new Date().toLocaleDateString('en-CA', { timeZone: ZONA })
 }
 
+// Sumar (o restar) días a una fecha 'YYYY-MM-DD'
+export function sumarDias(fecha, n) {
+  const d = deFecha(fecha)
+  d.setDate(d.getDate() + n)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
 export const MINUTOS = { single: 60, dobles: 90 }
 export const JUGADORES_EXTRA = { single: 1, dobles: 3 }
