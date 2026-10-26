@@ -4,10 +4,13 @@ import { BotonPrincipal } from '../componentes/ui'
 // Mensaje listo para que el socio lo mande él mismo (sin costo para el Club)
 function mensajeWhatsApp(r) {
   const partido = r.tipo === 'single' ? 'single' : 'dobles'
+  const dia = fechaLarga(r.fecha)
+  const horario = r.rango.replace(/\b0(\d):/g, '$1:') // "08:30 a 10:00" → "8:30 a 10:00"
   return [
     `🎾 Reservé la cancha ${r.cancha} para jugar ${partido}.`,
-    `📅 ${fechaLarga(r.fecha)}, de ${r.rango}.`,
-    `👥 Jugamos: ${r.jugadores.join(', ')}.`,
+    `📅 ${dia.charAt(0).toUpperCase()}${dia.slice(1)}`,
+    `🕘 ${horario}`,
+    `👥 Jugamos: ${r.jugadores.join(', ')} y yo.`,
     '¡Nos vemos en el Club!',
   ].join('\n')
 }
