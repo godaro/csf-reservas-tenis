@@ -24,6 +24,12 @@ export default function Jugadores({ sesion, reserva, onConfirmada, onVolver, onO
   // Si te ganan la cancha: otras canchas libres en el mismo horario (null = no aplica)
   const [alternativas, setAlternativas] = useState(null)
 
+  // Compañeros frecuentes (si falla, simplemente no se muestran)
+  const [frecuentes, setFrecuentes] = useState([])
+  useEffect(() => {
+    api.frecuentes(sesion.token).then(setFrecuentes).catch(() => setFrecuentes([]))
+  }, [sesion.token])
+
   // Búsqueda con una pequeña espera para no consultar en cada tecla
   useEffect(() => {
     const texto = q.trim()
@@ -106,6 +112,37 @@ export default function Jugadores({ sesion, reserva, onConfirmada, onVolver, onO
           ))}
         </div>
       </div>
+
+      {!completo && frecuentes.some((f) => !elegido(f.nro)) && (
+        <div className="flex flex-col gap-2">
+          <span className="text-[13px] font-bold text-gris">Jugaste con</span>
+          <div className="flex flex-wrap gap-2">
+            {frecuentes.filter((f) => !elegido(f.nro)).map((f) => {
+              const puede = f.estado === 'ok'
+              return (
+                <button
+                  key={f.nro}
+                  disabled={!puede}
+                  onClick={() => alternar(f)}
+                  title={f.estado !== 'ok' ? NOTAS[f.estado] : undefined}
+                  aria-label={puede ? `Sumar a ${f.nombre}` : `${f.nombre}: ${NOTAS[f.estado]}`}
+                  className={`inline-flex min-h-11 items-center gap-1.5 rounded-full border-[1.5px] px-3.5 text-[15px] font-bold transition ${
+                    puede
+                      ? 'border-verde bg-white text-verde hover:bg-verde-claro'
+                      : 'border-apagado bg-apagado text-gris line-through decoration-1'
+                  }`}
+                >
+                  {puede && <span aria-hidden="true">+</span>}
+                  {f.nombre}
+                </button>
+              )
+            })}
+          </div>
+          {frecuentes.some((f) => f.estado !== 'ok') && (
+            <p className="text-[12px] text-gris">Tachados: ya tienen una reserva activa o el carnet no está vigente.</p>
+          )}
+        </div>
+      )}
 
       {!completo && (
         <Campo id="buscar" label="Buscar socio con carnet de tenis" placeholder="Nombre, apellido o número de socio"

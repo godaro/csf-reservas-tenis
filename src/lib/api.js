@@ -28,6 +28,7 @@ export const api = {
   disponibilidad: (token, fecha, tipo) =>
     rpc('disponibilidad', { p_token: token, p_fecha: fecha, p_tipo: tipo }),
   buscarSocios: (token, q) => rpc('buscar_socios', { p_token: token, p_q: q }),
+  frecuentes: (token) => rpc('companeros_frecuentes', { p_token: token }),
   reservar: (token, cancha, inicio, tipo, jugadores) =>
     rpc('reservar', {
       p_token: token,

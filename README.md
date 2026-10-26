@@ -24,7 +24,8 @@ Horarios y ventana de habilitación se cambian en la tabla `config` (Supabase �
 ### 1. Base de datos (Supabase)
 1. En [supabase.com](https://supabase.com) → proyecto → **SQL Editor** → **New query**.
 2. Pegar y correr `supabase/migrations/20261026000000_inicial.sql`.
-3. (Opcional, para probar) pegar y correr `supabase/seed_demo.sql`: crea socios ficticios.
+3. Pegar y correr `supabase/migrations/20261026010000_companeros_frecuentes.sql` (compañeros frecuentes).
+4. (Opcional, para probar) pegar y correr `supabase/seed_demo.sql`: crea socios ficticios.
 
 Socios de prueba (número / DNI):
 
@@ -57,5 +58,6 @@ Después, borrar los de prueba: `delete from socios where nro like '99%';`
 ## Pendiente
 - Validación real del carnet (Excel de socios activos → luego conexión con AF Sistemas).
 - Horario real de apertura y cierre.
+- Favoritos fijados a mano (estrellita), si los socios lo piden.
 - Recordatorios por WhatsApp (requiere WhatsApp Business API).
 - Versión app (después de validar la web).
