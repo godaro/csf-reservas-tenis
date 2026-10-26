@@ -31,6 +31,37 @@ export default function Capitania({ sesion, onError }) {
   // Si cambian los datos del formulario, el aviso anterior ya no aplica
   useEffect(() => { setConflicto(null) }, [canchas, desde, hasta, motivo, semanal, fecha])
 
+  // Cerrar todas las canchas (lluvia / mantenimiento)
+  const [cierreMotivo, setCierreMotivo] = useState('Lluvia')
+  const [cierre, setCierre] = useState(null) // { datos, afectadas }
+  useEffect(() => { setCierre(null) }, [fecha, cierreMotivo])
+  const esHoy = fecha === hoy()
+  const desdeCierre = esHoy ? medioHoraActual() : HORAS[0]
+  const diaTerminado = esHoy && desdeCierre >= HORAS[HORAS.length - 1]
+
+  async function cerrarDia() {
+    setGuardando(true)
+    setError('')
+    setOk('')
+    const datos = {
+      canchas: Array.from({ length: 15 }, (_, i) => i + 1),
+      fecha, desde: desdeCierre, hasta: HORAS[HORAS.length - 1], motivo: cierreMotivo, semanal: false,
+    }
+    try {
+      const afectadas = await api.previsualizarBloqueo(sesion.token, datos)
+      setCierre({ datos, afectadas })
+    } catch (err) {
+      manejar(err)
+    } finally {
+      setGuardando(false)
+    }
+  }
+
+  async function confirmarCierre() {
+    await crear(cierre.datos, true)
+    setCierre(null)
+  }
+
   const manejar = useCallback((e) => (e.codigo === 'SESION' ? onError(e) : setError(e.message)), [onError])
 
   // Solo se muestra la respuesta del último pedido (evita que un día viejo pise al nuevo)
@@ -90,9 +121,29 @@ export default function Capitania({ sesion, onError }) {
     }
   }
 
-  async function borrar(b) {
-    if (!window.confirm(`¿Borrar el bloqueo "${b.motivo}" de la cancha ${b.cancha}${b.semanal ? ' (todas las semanas)' : ''}?`)) return
-    try { await api.borrarBloqueo(sesion.token, b.id); cargar() } catch (e) { manejar(e) }
+  async function borrar(g) {
+    const donde = g.canchas.length === 1 ? `la cancha ${g.canchas[0]}` : `las canchas ${rangos(g.canchas)}`
+    if (!window.confirm(`¿Borrar el bloqueo "${g.motivo}" de ${donde}${g.semanal ? ' (todas las semanas)' : ''}?\n\nLas reservas que se hayan cancelado por este bloqueo no se recuperan.`)) return
+    try {
+      await Promise.all(g.ids.map((id) => api.borrarBloqueo(sesion.token, id)))
+      cargar()
+    } catch (e) { manejar(e) }
+  }
+
+  // Libera todos los bloqueos puntuales del día (los semanales se mantienen)
+  async function desbloquearDia() {
+    const puntuales = (panelVisible?.bloqueos ?? []).filter((b) => !b.semanal)
+    const haySemanales = (panelVisible?.bloqueos ?? []).some((b) => b.semanal)
+    if (!window.confirm(`¿Desbloquear todas las canchas del ${fechaLarga(fecha)}?` +
+      (haySemanales ? '\n\nLos bloqueos semanales (que se repiten todas las semanas) se mantienen.' : '') +
+      '\n\nLas reservas que se hayan cancelado por estos bloqueos no se recuperan.')) return
+    setError('')
+    setOk('')
+    try {
+      await Promise.all(puntuales.map((b) => api.borrarBloqueo(sesion.token, b.id)))
+      setOk('Canchas desbloqueadas.')
+      cargar()
+    } catch (e) { manejar(e) }
   }
 
   async function cancelarReserva(celda, cancha, horaTxt) {
@@ -124,6 +175,56 @@ export default function Capitania({ sesion, onError }) {
 
       {error && <Aviso tipo="error">{error}</Aviso>}
       {ok && <Aviso>{ok}</Aviso>}
+
+      <section className="flex flex-col gap-3 rounded-2xl border border-[#f2d3a6] bg-[#fff8ee] p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-col">
+            <h2 className="text-lg font-bold">Cerrar todas las canchas</h2>
+            <span className="text-[14px] text-gris">
+              {diaTerminado ? 'Ya terminó el horario de hoy.'
+                : esHoy ? `Desde ahora (${desdeCierre}) hasta el cierre · cancela las reservas que queden.`
+                  : `Todo el ${fechaLarga(fecha)} · cancela todas las reservas del día.`}
+            </span>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {['Lluvia', 'Mantenimiento'].map((m) => (
+              <button key={m} type="button" onClick={() => setCierreMotivo(m)} aria-pressed={cierreMotivo === m}
+                className={`min-h-11 rounded-full border-[1.5px] px-4 font-bold ${cierreMotivo === m ? 'border-[#8a4b00] bg-[#8a4b00] text-white' : 'border-borde bg-white text-tinta'}`}>
+                {m}
+              </button>
+            ))}
+            <button type="button" onClick={cerrarDia} disabled={guardando || diaTerminado || !!cierre}
+              className="min-h-11 rounded-xl bg-[#8a4b00] px-4 font-bold text-white disabled:bg-apagado disabled:text-gris">
+              Cerrar canchas
+            </button>
+          </div>
+        </div>
+        {cierre && (
+          <div role="alert" className="flex flex-col gap-3 rounded-xl border border-[#f2d3a6] bg-white p-3.5 text-[#4a3a22]">
+            <strong className="text-[15px]">
+              Se cierran las 15 canchas por {cierre.datos.motivo.toLowerCase()}, de {cierre.datos.desde} a {cierre.datos.hasta}.
+              {' '}{cierre.afectadas.length === 0 ? 'No hay reservas para cancelar.'
+                : cierre.afectadas.length === 1 ? 'Se cancela 1 reserva:' : `Se cancelan ${cierre.afectadas.length} reservas:`}
+            </strong>
+            {cierre.afectadas.length > 0 && (
+              <ul className="flex max-h-48 flex-col gap-1 overflow-y-auto text-[14px]">
+                {cierre.afectadas.map((a) => (
+                  <li key={a.id}><strong>Cancha {a.cancha}</strong> · {a.hora_inicio} a {a.hora_fin} · {a.jugadores}</li>
+                ))}
+              </ul>
+            )}
+            <div className="flex flex-wrap gap-2">
+              <button type="button" disabled={guardando} onClick={confirmarCierre}
+                className="min-h-11 rounded-lg bg-error px-4 font-bold text-white disabled:opacity-60">
+                {guardando ? 'Guardando…' : 'Confirmar cierre'}
+              </button>
+              <button type="button" onClick={() => setCierre(null)} className="min-h-11 rounded-lg px-4 font-bold text-[#8a4b00]">
+                Volver
+              </button>
+            </div>
+          </div>
+        )}
+      </section>
 
       <div className="flex flex-wrap gap-4 text-[13px] text-gris">
         <span className="inline-flex items-center gap-1.5"><span className="size-3.5 rounded border border-borde bg-white" />Libre</span>
@@ -199,21 +300,63 @@ export default function Capitania({ sesion, onError }) {
         </form>
 
         <div className="flex flex-col gap-2 rounded-2xl border border-borde bg-white p-4">
-          <h2 className="text-lg font-bold">Bloqueos del día</h2>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-lg font-bold">Bloqueos del día</h2>
+            {(panelVisible?.bloqueos ?? []).some((b) => !b.semanal) && (
+              <button type="button" onClick={desbloquearDia}
+                className="min-h-11 rounded-lg border-[1.5px] border-error px-3 text-sm font-bold text-error hover:bg-[#fdf3f2]">
+                Desbloquear todo
+              </button>
+            )}
+          </div>
           {panelVisible?.bloqueos.length === 0 && <p className="text-[15px] text-gris">Sin bloqueos para este día.</p>}
-          {panelVisible?.bloqueos.map((b) => (
-            <div key={b.id} className="flex items-center justify-between gap-3 rounded-xl bg-azul-claro px-3 py-2">
+          {agrupar(panelVisible?.bloqueos ?? []).map((g) => (
+            <div key={g.clave} className="flex items-center justify-between gap-3 rounded-xl bg-azul-claro px-3 py-2">
               <span className="flex flex-col">
-                <strong className="text-azul">{b.motivo} · Cancha {b.cancha}</strong>
-                <span className="text-[13px] text-azul">{b.desde} a {b.hasta}{b.semanal ? ' · todas las semanas' : ''}</span>
+                <strong className="text-azul">
+                  {g.motivo} · {g.canchas.length === 15 ? 'Todas las canchas' : g.canchas.length === 1 ? `Cancha ${g.canchas[0]}` : `Canchas ${rangos(g.canchas)}`}
+                </strong>
+                <span className="text-[13px] text-azul">{g.desde} a {g.hasta}{g.semanal ? ' · todas las semanas' : ''}</span>
               </span>
-              <button onClick={() => borrar(b)} className="min-h-11 px-2 text-sm font-bold text-error">Borrar</button>
+              <button onClick={() => borrar(g)} className="min-h-11 px-2 text-sm font-bold text-error">Borrar</button>
             </div>
           ))}
         </div>
       </div>
     </div>
   )
+}
+
+// Media hora en curso en el Club (ej. 15:47 → "15:30"), nunca antes de la apertura
+function medioHoraActual() {
+  const t = new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/Argentina/Buenos_Aires' })
+  const [h, m] = t.split(':').map(Number)
+  const hhmm = `${String(h).padStart(2, '0')}:${m < 30 ? '00' : '30'}`
+  return hhmm < HORAS[0] ? HORAS[0] : hhmm
+}
+
+// Junta los bloqueos con mismo motivo y horario en una sola fila
+function agrupar(bloqueos) {
+  const grupos = new Map()
+  for (const b of bloqueos) {
+    const clave = `${b.motivo}|${b.desde}|${b.hasta}|${b.semanal}`
+    if (!grupos.has(clave)) grupos.set(clave, { clave, motivo: b.motivo, desde: b.desde, hasta: b.hasta, semanal: b.semanal, canchas: [], ids: [] })
+    grupos.get(clave).canchas.push(b.cancha)
+    grupos.get(clave).ids.push(b.id)
+  }
+  return [...grupos.values()].map((g) => ({ ...g, canchas: g.canchas.sort((a, b) => a - b) }))
+}
+
+// [1,2,3,4,7,9,10] → "1–4, 7, 9–10"
+function rangos(ns) {
+  const partes = []
+  for (let i = 0; i < ns.length; i++) {
+    let j = i
+    while (j + 1 < ns.length && ns[j + 1] === ns[j] + 1) j++
+    partes.push(j > i ? `${ns[i]}–${ns[j]}` : `${ns[i]}`)
+    i = j
+  }
+  return partes.join(', ')
 }
 
 function Fila({ fila, horas, onReservada }) {
