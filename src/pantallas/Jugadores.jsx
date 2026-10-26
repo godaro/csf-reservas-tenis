@@ -20,6 +20,9 @@ export default function Jugadores({ sesion, reserva, onConfirmada, onVolver, onO
   const [elegidos, setElegidos] = useState([])
   const [error, setError] = useState(null)
   const [enviando, setEnviando] = useState(false)
+  const [canchaActual, setCanchaActual] = useState(cancha)
+  // Si te ganan la cancha: otras canchas libres en el mismo horario (null = no aplica)
+  const [alternativas, setAlternativas] = useState(null)
 
   // Búsqueda con una pequeña espera para no consultar en cada tecla
   useEffect(() => {
@@ -48,19 +51,31 @@ export default function Jugadores({ sesion, reserva, onConfirmada, onVolver, onO
     }
   }
 
-  async function confirmar() {
+  async function confirmar(n = canchaActual) {
     setError(null)
+    setAlternativas(null)
+    setCanchaActual(n)
     setEnviando(true)
     try {
-      await api.reservar(sesion.token, cancha, slot.inicio, tipo, elegidos.map((e) => e.nro))
+      await api.reservar(sesion.token, n, slot.inicio, tipo, elegidos.map((e) => e.nro))
       onConfirmada({
-        fecha, cancha, tipo,
+        fecha, cancha: n, tipo,
         rango: `${slot.hora} a ${hora(fin)}`,
         jugadores: elegidos.map((e) => e.nombre),
       })
     } catch (e) {
-      if (e.codigo === 'SESION') onError(e)
-      else setError({ texto: e.message, ocupada: e.codigo === 'OCUPADA' })
+      if (e.codigo === 'SESION') return onError(e)
+      setError({ texto: e.message, ocupada: e.codigo === 'OCUPADA' })
+      if (e.codigo === 'OCUPADA') {
+        // Buscamos qué otras canchas siguen libres a esa misma hora
+        try {
+          const d = await api.disponibilidad(sesion.token, fecha, tipo)
+          const mismo = d.slots.find((s) => s.hora === slot.hora)
+          setAlternativas(mismo ? mismo.libres : [])
+        } catch {
+          setAlternativas([])
+        }
+      }
     } finally {
       setEnviando(false)
     }
@@ -69,7 +84,7 @@ export default function Jugadores({ sesion, reserva, onConfirmada, onVolver, onO
   return (
     <div className="flex flex-col gap-4 pb-24">
       <Volver onClick={onVolver}>Cambiar cancha</Volver>
-      <Titulo sub={`${fechaCorta(fecha)} · ${slot.hora} a ${hora(fin)} · Cancha ${cancha}`}>¿Con quién jugás?</Titulo>
+      <Titulo sub={`${fechaCorta(fecha)} · ${slot.hora} a ${hora(fin)} · Cancha ${canchaActual}`}>¿Con quién jugás?</Titulo>
 
       <div className="flex flex-col gap-2 rounded-xl border border-borde bg-white p-3.5">
         <span className="text-[13px] font-bold text-gris">
@@ -129,21 +144,40 @@ export default function Jugadores({ sesion, reserva, onConfirmada, onVolver, onO
         </div>
       )}
 
-      {error && (
-        <Aviso tipo="error">
-          {error.texto}
-          {error.ocupada && (
-            <button onClick={onOcupada} className="mt-1 block min-h-11 font-bold underline">
-              Ver canchas libres
+      {error && !error.ocupada && <Aviso tipo="error">{error.texto}</Aviso>}
+
+      {error?.ocupada && (
+        <div role="alert" className="flex flex-col gap-3 rounded-xl border border-[#f2d3a6] bg-[#fff4e5] p-4">
+          <span className="text-[15px] leading-snug text-[#4a3a22]">
+            <strong className="block">Te ganaron la cancha {canchaActual}</strong>
+            {alternativas === null
+              ? 'Buscando otras canchas libres a la misma hora…'
+              : alternativas.length > 0
+                ? `Estas siguen libres a las ${slot.hora}. Tocá una y la reservamos con los mismos jugadores:`
+                : `No quedan canchas libres a las ${slot.hora}.`}
+          </span>
+          {alternativas?.length > 0 && (
+            <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+              {alternativas.map((n) => (
+                <button key={n} onClick={() => confirmar(n)} disabled={enviando}
+                  className="min-h-12 rounded-xl border-[1.5px] border-verde bg-white font-bold text-verde hover:bg-verde-claro disabled:opacity-60">
+                  Cancha {n}
+                </button>
+              ))}
+            </div>
+          )}
+          {alternativas?.length === 0 && (
+            <button onClick={onOcupada} className="min-h-11 self-start font-bold text-[#8a4b00] underline">
+              Ver otros horarios
             </button>
           )}
-        </Aviso>
+        </div>
       )}
 
       <div className="fixed inset-x-0 bottom-[68px] z-10 border-t border-borde bg-white px-5 py-3">
         <div className="mx-auto max-w-xl">
-          <BotonPrincipal disabled={!completo || enviando} onClick={confirmar}>
-            {enviando ? 'Reservando…' : completo ? 'Confirmar reserva'
+          <BotonPrincipal disabled={!completo || enviando || error?.ocupada} onClick={() => confirmar()}>
+            {enviando ? 'Reservando…' : error?.ocupada ? 'Elegí otra cancha' : completo ? 'Confirmar reserva'
               : faltan === 1 ? 'Sumá 1 jugador más' : `Sumá ${faltan} jugadores más`}
           </BotonPrincipal>
         </div>
