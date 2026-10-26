@@ -32,7 +32,8 @@ Socios de prueba (número / DNI):
 
 | Socio | Nº | DNI | Notas |
 |---|---|---|---|
-| Socio Prueba | 99001 | 30111222 | |
+| Socio Prueba | 99000 | 30000000 | |
+| Darío Aguilar | 99001 | 30111222 | |
 | Martín Álvarez | 99002 | 30222333 | |
 | Lucía Benítez | 99003 | 30333444 | |
 | Tomás Herrera | 99006 | 30666777 | sin carnet (no puede entrar) |

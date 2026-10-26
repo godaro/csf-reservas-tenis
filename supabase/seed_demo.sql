@@ -5,7 +5,8 @@
 -- =====================================================================
 
 insert into public.socios (nro, dni, nombre, apellido, carnet_tenis, carnet_vence, rol) values
-  ('99001', '30111222', 'Socio',     'Prueba',     true,  null, 'socio'),
+  ('99000', '30000000', 'Socio',     'Prueba',     true,  null, 'socio'),
+  ('99001', '30111222', 'Darío',     'Aguilar',    true,  null, 'socio'),
   ('99002', '30222333', 'Martín',    'Álvarez',    true,  null, 'socio'),
   ('99003', '30333444', 'Lucía',     'Benítez',    true,  null, 'socio'),
   ('99004', '30444555', 'Pablo',     'Ferreyra',   true,  null, 'socio'),
