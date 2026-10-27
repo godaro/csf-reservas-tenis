@@ -27,7 +27,8 @@ Horarios y ventana de habilitaci贸n se cambian en la tabla `config` (Supabase 鈫
 3. Pegar y correr `supabase/migrations/20261026010000_companeros_frecuentes.sql` (compa帽eros frecuentes).
 4. Pegar y correr `supabase/migrations/20261026020000_bloqueos_sobre_reservas.sql` (bloqueos que pisan reservas).
 5. Pegar y correr `supabase/migrations/20261027000000_avisos_mail.sql` (avisos por mail).
-6. (Opcional, para probar) pegar y correr `supabase/seed_demo.sql`: crea socios ficticios.
+6. Pegar y correr `supabase/migrations/20261027010000_aviso_quien_cancela.sql` (aviso tambi茅n a quien cancela).
+7. (Opcional, para probar) pegar y correr `supabase/seed_demo.sql`: crea socios ficticios.
 
 Socios de prueba (n煤mero / DNI):
 
@@ -59,6 +60,7 @@ desde `web@clubsanfernando.org.ar` (servidor `mail.clubsanfernando.org.ar`, puer
 La confirmaci贸n trae un bot贸n para Google Calendar y un `.ics` adjunto con recordatorio 2 horas antes.
 
 - La base anota los avisos en la tabla `avisos` y despierta a la Edge Function `enviar-avisos`.
+- La cancelaci贸n les llega a todos los jugadores, incluido quien cancel贸 (con un texto propio).
 - Si un env铆o falla, se reintenta cada 5 minutos (hasta 5 veces). La reserva nunca se ve afectada.
 - Socios sin mail: el aviso queda como `sin_mail`.
 

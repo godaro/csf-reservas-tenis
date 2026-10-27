@@ -35,6 +35,7 @@ export type Aviso = {
   hora_inicio: string
   hora_fin: string
   es_titular: boolean
+  yo_cancele?: boolean
   titular: string
   otros: string[] | null
   cancelada_por_capitania: boolean
@@ -179,10 +180,12 @@ ${tablaDatos(a)}
     }
   }
 
-  const porque = motivoCancelacion(a)
+  const porque = a.yo_cancele
+    ? `Cancelaste tu reserva.${a.otros?.length ? ` ${a.otros.length === 1 ? 'Le' : 'Les'} avisamos a ${listaNombres(a.otros)}.` : ''}`
+    : motivoCancelacion(a)
   const asunto = `Reserva cancelada · Cancha ${a.cancha} · ${cuando}`
   const html = marco(asunto, `
-<h1 style="margin:0 0 8px;font-size:24px">Se canceló tu partido</h1>
+<h1 style="margin:0 0 8px;font-size:24px">${a.yo_cancele ? 'Cancelaste tu reserva' : 'Se canceló tu partido'}</h1>
 <p style="margin:0 0 4px;font-size:16px;line-height:1.5">Hola ${esc(a.nombre)},</p>
 <p style="margin:0;font-size:16px;line-height:1.5">${esc(porque)}</p>
 ${tablaDatos(a, true)}
