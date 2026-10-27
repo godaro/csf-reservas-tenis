@@ -3,7 +3,7 @@ import { api } from '../lib/api'
 import { fechaCorta, fechaLarga, hoy, sumarDias } from '../lib/fechas'
 import { Aviso, Cargando, Titulo } from '../componentes/ui'
 
-const MOTIVOS = ['Escuela de Tenis', 'Clases', 'Interclubes', 'Torneo interno', 'Mantenimiento', 'Lluvia']
+const MOTIVOS = ['Escuela de Tenis', 'Clases', 'Interclubes', 'Torneo interno', 'Mantenimiento', 'Lluvia', 'Otro']
 const HORAS = Array.from({ length: 29 }, (_, i) => {
   const m = 8 * 60 + i * 30
   return `${String(Math.floor(m / 60)).padStart(2, '0')}:${m % 60 ? '30' : '00'}`
@@ -25,11 +25,17 @@ export default function Capitania({ sesion, onError }) {
   const [desde, setDesde] = useState('09:00')
   const [hasta, setHasta] = useState('12:00')
   const [motivo, setMotivo] = useState(MOTIVOS[0])
+  const [motivoOtro, setMotivoOtro] = useState('')
+  const motivoFinal = motivo === 'Otro' ? motivoOtro.trim() : motivo
+  // Celda o bloqueo bajo el mouse: resalta la grilla y la lista de bloqueos entre sí
+  const [foco, setFoco] = useState(null) // { cancha, hora, estado, detalle } de una celda
+  const [grupoFoco, setGrupoFoco] = useState(null) // clave de un bloqueo de la lista
   const [semanal, setSemanal] = useState(false)
   const [guardando, setGuardando] = useState(false)
   const [conflicto, setConflicto] = useState(null) // { datos, afectadas: [...] }
   // Si cambian los datos del formulario, el aviso anterior ya no aplica
-  useEffect(() => { setConflicto(null) }, [canchas, desde, hasta, motivo, semanal, fecha])
+  useEffect(() => { setConflicto(null) }, [canchas, desde, hasta, motivo, motivoOtro, semanal, fecha])
+  useEffect(() => { setFoco(null); setGrupoFoco(null) }, [fecha])
 
   // Cerrar todas las canchas (lluvia / mantenimiento)
   const [cierreMotivo, setCierreMotivo] = useState('Lluvia')
@@ -83,6 +89,11 @@ export default function Capitania({ sesion, onError }) {
     return () => { clearInterval(t); document.removeEventListener('visibilitychange', alVolver) }
   }, [cargar])
   const panelVisible = panel?.fecha === fecha ? panel : null
+  const grupos = agrupar(panelVisible?.bloqueos ?? [])
+  const cubre = (g, cancha, hora) => g.canchas.includes(cancha) && g.desde <= hora && hora < g.hasta
+  const gruposDeFoco = foco?.estado === 'bloqueada' ? grupos.filter((g) => cubre(g, foco.cancha, foco.hora)).map((g) => g.clave) : []
+  const grupoResaltado = grupos.find((g) => g.clave === grupoFoco)
+  const celdaResaltada = (cancha, hora) => (grupoResaltado ? cubre(grupoResaltado, cancha, hora) : false)
   const grilla = panelVisible ?? panel // mientras carga otro día, se ve la grilla anterior atenuada
 
   const alternarCancha = (n) =>
@@ -95,7 +106,7 @@ export default function Capitania({ sesion, onError }) {
     setError('')
     setOk('')
     setConflicto(null)
-    const datos = { canchas, fecha, desde, hasta, motivo, semanal }
+    const datos = { canchas, fecha, desde, hasta, motivo: motivoFinal, semanal }
     try {
       const afectadas = await api.previsualizarBloqueo(sesion.token, datos)
       if (afectadas.length > 0) setConflicto({ datos, afectadas })
@@ -200,8 +211,20 @@ export default function Capitania({ sesion, onError }) {
         <span className="inline-flex items-center gap-1.5"><span className="size-3.5 rounded bg-azul" />Bloqueada</span>
       </div>
 
+      <p aria-live="polite" className="-mb-2 min-h-6 truncate text-[14px] text-tinta">
+        {foco ? (
+          <><strong>Cancha {foco.cancha} · {foco.hora}</strong>{' — '}
+            {foco.estado === 'libre' ? 'Libre'
+              : foco.estado === 'reservada' ? `Reservada: ${foco.detalle}`
+                : `Bloqueada: ${grupos.filter((g) => cubre(g, foco.cancha, foco.hora)).map((g) => `${g.motivo} (${g.desde} a ${g.hasta}${g.semanal ? ', todas las semanas' : ''})`).join(' · ') || foco.detalle}`}</>
+        ) : grupoResaltado ? (
+          <><strong>{grupoResaltado.motivo}</strong> · {grupoResaltado.desde} a {grupoResaltado.hasta}</>
+        ) : <span className="text-gris">Pasá el mouse por una celda para ver el detalle.</span>}
+      </p>
+
       {/* Alto mínimo = 15 canchas, así el contenido no salta mientras carga */}
-      <div className="relative min-h-[556px] overflow-x-auto rounded-2xl border border-borde bg-white p-3" aria-busy={!panelVisible}>
+      <div className="relative min-h-[556px] overflow-x-auto rounded-2xl border border-borde bg-white p-3" aria-busy={!panelVisible}
+        onMouseLeave={() => setFoco(null)}>
         {grilla ? (
           <div className={`grid gap-0.5 transition-opacity ${panelVisible ? '' : 'opacity-40'}`}
             style={{ gridTemplateColumns: `76px repeat(${grilla.horas.length}, minmax(24px, 1fr))`, minWidth: 820 }}>
@@ -210,7 +233,8 @@ export default function Capitania({ sesion, onError }) {
               <span key={h} className="whitespace-nowrap pb-1 text-[11px] font-bold text-gris">{i % 2 === 0 ? h : ''}</span>
             ))}
             {grilla.filas.map((f) => (
-              <Fila key={f.cancha} fila={f} horas={grilla.horas} onReservada={panelVisible ? cancelarReserva : () => {}} />
+              <Fila key={f.cancha} fila={f} horas={grilla.horas} onReservada={panelVisible ? cancelarReserva : () => {}}
+                onFoco={setFoco} resaltada={celdaResaltada} />
             ))}
           </div>
         ) : (
@@ -237,6 +261,15 @@ export default function Capitania({ sesion, onError }) {
             <Selector id="hasta" label="Hasta" valor={hasta} setValor={setHasta} opciones={HORAS.slice(1)} />
           </div>
           <Selector id="motivo" label="Motivo" valor={motivo} setValor={setMotivo} opciones={MOTIVOS} />
+          {motivo === 'Otro' && (
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="motivo-otro" className="text-[13px] font-bold">¿Cuál es el motivo?</label>
+              <input id="motivo-otro" value={motivoOtro} onChange={(e) => setMotivoOtro(e.target.value)} maxLength={60} required autoFocus
+                placeholder="Ej.: Clínica de saque, Evento del Club" 
+                className="h-11 rounded-xl border-[1.5px] border-borde bg-white px-3 text-[15px] outline-none focus:border-azul" />
+              <span className="text-[12px] text-gris">Los socios lo ven en el aviso si el bloqueo les cancela una reserva.</span>
+            </div>
+          )}
           <label className="flex min-h-8 items-center gap-2 text-[15px]">
             <input type="checkbox" checked={semanal} onChange={(e) => setSemanal(e.target.checked)} className="size-4.5 accent-azul" />
             Repetir todas las semanas (mismo día y horario)
@@ -265,9 +298,9 @@ export default function Capitania({ sesion, onError }) {
               </div>
             </div>
           )}
-          <button disabled={guardando || canchas.length === 0 || !!conflicto}
+          <button disabled={guardando || canchas.length === 0 || !!conflicto || !motivoFinal}
             className="h-12 rounded-xl bg-azul font-bold text-white disabled:bg-apagado disabled:text-gris">
-            {guardando ? 'Guardando…' : canchas.length === 0 ? 'Elegí al menos una cancha' : 'Bloquear franja'}
+            {guardando ? 'Guardando…' : canchas.length === 0 ? 'Elegí al menos una cancha' : !motivoFinal ? 'Escribí el motivo' : 'Bloquear franja'}
           </button>
         </form>
 
@@ -282,8 +315,11 @@ export default function Capitania({ sesion, onError }) {
             )}
           </div>
           {panelVisible?.bloqueos.length === 0 && <p className="text-[15px] text-gris">Sin bloqueos para este día.</p>}
-          {agrupar(panelVisible?.bloqueos ?? []).map((g) => (
-            <div key={g.clave} className="flex items-center justify-between gap-3 rounded-xl bg-azul-claro px-3 py-2">
+          {grupos.map((g) => (
+            <div key={g.clave} onMouseEnter={() => setGrupoFoco(g.clave)} onMouseLeave={() => setGrupoFoco(null)}
+              className={`flex items-center justify-between gap-3 rounded-xl px-3 py-2 transition ${
+                gruposDeFoco.includes(g.clave) || grupoFoco === g.clave ? 'bg-[#cfdaf0] ring-2 ring-azul' : 'bg-azul-claro'
+              }`}>
               <span className="flex flex-col">
                 <strong className="text-azul">
                   {g.motivo} · {g.canchas.length === 15 ? 'Todas las canchas' : g.canchas.length === 1 ? `Cancha ${g.canchas[0]}` : `Canchas ${rangos(g.canchas)}`}
@@ -444,20 +480,23 @@ function rangos(ns) {
   return partes.join(', ')
 }
 
-function Fila({ fila, horas, onReservada }) {
+function Fila({ fila, horas, onReservada, onFoco, resaltada }) {
   return (
     <>
       <span className="flex h-8 items-center text-[13px] font-bold">Cancha {fila.cancha}</span>
-      {fila.celdas.map((c, i) =>
-        c.estado === 'reservada' ? (
-          <button key={i} title={`${horas[i]} · ${c.detalle}`} aria-label={`Cancha ${fila.cancha}, ${horas[i]}: ${c.detalle}`}
+      {fila.celdas.map((c, i) => {
+        const info = { cancha: fila.cancha, hora: horas[i], estado: c.estado, detalle: c.detalle }
+        const marca = resaltada(fila.cancha, horas[i]) ? ' ring-2 ring-dorado ring-offset-1' : ''
+        return c.estado === 'reservada' ? (
+          <button key={i} aria-label={`Cancha ${fila.cancha}, ${horas[i]}: ${c.detalle}`}
+            onMouseEnter={() => onFoco(info)} onFocus={() => onFoco(info)}
             onClick={() => onReservada(c, fila.cancha, horas[i])}
-            className={`h-8 rounded border ${COLOR.reservada}`} />
+            className={`h-8 rounded border ${COLOR.reservada}${marca}`} />
         ) : (
-          <span key={i} title={`${horas[i]} · ${c.estado === 'bloqueada' ? c.detalle : 'Libre'}`}
-            className={`h-8 rounded border ${COLOR[c.estado]}`} />
-        ),
-      )}
+          <span key={i} onMouseEnter={() => onFoco(info)}
+            className={`h-8 rounded border ${COLOR[c.estado]}${marca}`} />
+        )
+      })}
     </>
   )
 }
