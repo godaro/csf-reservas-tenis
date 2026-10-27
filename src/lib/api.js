@@ -40,6 +40,8 @@ export const api = {
       p_jugadores: jugadores,
     }),
   misReservas: (token) => rpc('mis_reservas', { p_token: token }),
+  miPerfil: (token) => rpc('mi_perfil', { p_token: token }),
+  actualizarMiEmail: (token, email) => rpc('actualizar_mi_email', { p_token: token, p_email: email }),
   cancelar: (token, id) => rpc('cancelar_reserva', { p_token: token, p_id: id }),
   panelDia: (token, fecha) => rpc('panel_dia', { p_token: token, p_fecha: fecha }),
   previsualizarBloqueo: (token, b) =>

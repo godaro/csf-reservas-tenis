@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { api } from '../lib/api'
 import { fechaCorta } from '../lib/fechas'
 import { Aviso, BotonPrincipal, Cargando, Titulo } from '../componentes/ui'
+import MiMail from '../componentes/MiMail'
 
 // Avisos de cancelación que el socio ya vio (se guardan en el dispositivo)
 const CLAVE_VISTAS = 'csf-tenis-canceladas-vistas'
@@ -110,6 +111,8 @@ export default function MisReservas({ sesion, onReservar, onError }) {
           </article>
         )
       })}
+
+      <MiMail sesion={sesion} modo="ficha" onError={onError} />
 
       <p className="text-[13px] leading-snug text-gris">
         Podés tener una sola reserva activa, ya sea como titular o como jugador invitado por otro socio.

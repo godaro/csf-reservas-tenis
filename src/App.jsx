@@ -9,6 +9,7 @@ import MisReservas from './pantallas/MisReservas'
 import Capitania from './pantallas/Capitania'
 import { Aviso } from './componentes/ui'
 import { JUGADORES_EXTRA } from './lib/fechas'
+import MiMail from './componentes/MiMail'
 
 export default function App() {
   const [sesion, setSesion] = useState(leerSesion)
@@ -85,6 +86,7 @@ export default function App() {
     <Marco sesion={sesion} onSalir={salir}
       tabs={tabs} tabActiva={tabActiva} onTab={(t) => ir(t)}>
       {aviso && <div className="mb-4"><Aviso tipo="error">{aviso}</Aviso></div>}
+      {pantalla === 'agenda' && <MiMail key={sesion.token} sesion={sesion} onError={onError} />}
 
       {pantalla === 'agenda' && (
         <Agenda sesion={sesion} seleccion={seleccion} setSeleccion={setSeleccion} onError={onError}
