@@ -83,6 +83,7 @@ export default function Capitania({ sesion, onError }) {
     return () => { clearInterval(t); document.removeEventListener('visibilitychange', alVolver) }
   }, [cargar])
   const panelVisible = panel?.fecha === fecha ? panel : null
+  const grilla = panelVisible ?? panel // mientras carga otro día, se ve la grilla anterior atenuada
 
   const alternarCancha = (n) =>
     setCanchas((c) => (c.includes(n) ? c.filter((x) => x !== n) : [...c, n].sort((a, b) => a - b)))
@@ -199,19 +200,23 @@ export default function Capitania({ sesion, onError }) {
         <span className="inline-flex items-center gap-1.5"><span className="size-3.5 rounded bg-azul" />Bloqueada</span>
       </div>
 
-      {!panelVisible ? <Cargando /> : (
-        <div className="overflow-x-auto rounded-2xl border border-borde bg-white p-3">
-          <div className="grid gap-0.5" style={{ gridTemplateColumns: `76px repeat(${panelVisible.horas.length}, minmax(24px, 1fr))`, minWidth: 820 }}>
+      {/* Alto mínimo = 15 canchas, así el contenido no salta mientras carga */}
+      <div className="relative min-h-[556px] overflow-x-auto rounded-2xl border border-borde bg-white p-3" aria-busy={!panelVisible}>
+        {grilla ? (
+          <div className={`grid gap-0.5 transition-opacity ${panelVisible ? '' : 'opacity-40'}`}
+            style={{ gridTemplateColumns: `76px repeat(${grilla.horas.length}, minmax(24px, 1fr))`, minWidth: 820 }}>
             <span />
-            {panelVisible.horas.map((h, i) => (
+            {grilla.horas.map((h, i) => (
               <span key={h} className="whitespace-nowrap pb-1 text-[11px] font-bold text-gris">{i % 2 === 0 ? h : ''}</span>
             ))}
-            {panelVisible.filas.map((f) => (
-              <Fila key={f.cancha} fila={f} horas={panelVisible.horas} onReservada={cancelarReserva} />
+            {grilla.filas.map((f) => (
+              <Fila key={f.cancha} fila={f} horas={grilla.horas} onReservada={panelVisible ? cancelarReserva : () => {}} />
             ))}
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="flex min-h-[530px] items-center justify-center"><Cargando /></div>
+        )}
+      </div>
 
       <div className="grid gap-5 md:grid-cols-2">
         <form onSubmit={bloquear} className="flex flex-col gap-3 rounded-2xl border border-borde bg-white p-4">
