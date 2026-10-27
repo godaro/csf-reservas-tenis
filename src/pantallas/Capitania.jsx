@@ -11,8 +11,13 @@ const HORAS = Array.from({ length: 29 }, (_, i) => {
 
 const COLOR = {
   libre: 'bg-white border-borde',
-  reservada: 'bg-[#9ccbae] border-[#9ccbae] hover:brightness-95',
-  bloqueada: 'bg-azul border-azul',
+  reservada: 'bg-[#9ccbae] border-[#9ccbae] cursor-pointer',
+  bloqueada: 'bg-azul border-azul cursor-pointer',
+}
+// Mismo bloque bajo el mouse (todas sus celdas juntas)
+const COLOR_FOCO = {
+  reservada: 'bg-[#5fa97c] border-[#3f8a5d]',
+  bloqueada: 'bg-[#3d63ad] border-[#22427f]',
 }
 
 export default function Capitania({ sesion, onError }) {
@@ -94,6 +99,14 @@ export default function Capitania({ sesion, onError }) {
   const gruposDeFoco = foco?.estado === 'bloqueada' ? grupos.filter((g) => cubre(g, foco.cancha, foco.hora)).map((g) => g.clave) : []
   const grupoResaltado = grupos.find((g) => g.clave === grupoFoco)
   const celdaResaltada = (cancha, hora) => (grupoResaltado ? cubre(grupoResaltado, cancha, hora) : false)
+  // Bloque completo bajo el mouse: todas las celdas de ese bloqueo o esa reserva en la misma cancha
+  const gruposFoco = grupos.filter((g) => gruposDeFoco.includes(g.clave))
+  const enBloqueFoco = (cancha, hora, celda) => {
+    if (!foco || foco.cancha !== cancha || celda.estado !== foco.estado) return false
+    if (foco.estado === 'bloqueada') return gruposFoco.some((g) => cubre(g, cancha, hora))
+    if (foco.estado === 'reservada') return celda.reserva_id === foco.reserva_id
+    return false
+  }
   const grilla = panelVisible ?? panel // mientras carga otro día, se ve la grilla anterior atenuada
 
   const alternarCancha = (n) =>
@@ -234,7 +247,7 @@ export default function Capitania({ sesion, onError }) {
             ))}
             {grilla.filas.map((f) => (
               <Fila key={f.cancha} fila={f} horas={grilla.horas} onReservada={panelVisible ? cancelarReserva : () => {}}
-                onFoco={setFoco} resaltada={celdaResaltada} />
+                onFoco={setFoco} resaltada={celdaResaltada} enBloque={enBloqueFoco} />
             ))}
           </div>
         ) : (
@@ -480,21 +493,22 @@ function rangos(ns) {
   return partes.join(', ')
 }
 
-function Fila({ fila, horas, onReservada, onFoco, resaltada }) {
+function Fila({ fila, horas, onReservada, onFoco, resaltada, enBloque }) {
   return (
     <>
       <span className="flex h-8 items-center text-[13px] font-bold">Cancha {fila.cancha}</span>
       {fila.celdas.map((c, i) => {
-        const info = { cancha: fila.cancha, hora: horas[i], estado: c.estado, detalle: c.detalle }
+        const info = { cancha: fila.cancha, hora: horas[i], estado: c.estado, detalle: c.detalle, reserva_id: c.reserva_id }
         const marca = resaltada(fila.cancha, horas[i]) ? ' ring-2 ring-dorado ring-offset-1' : ''
+        const color = enBloque(fila.cancha, horas[i], c) ? `${COLOR_FOCO[c.estado]} cursor-pointer` : COLOR[c.estado]
         return c.estado === 'reservada' ? (
           <button key={i} aria-label={`Cancha ${fila.cancha}, ${horas[i]}: ${c.detalle}`}
             onMouseEnter={() => onFoco(info)} onFocus={() => onFoco(info)}
             onClick={() => onReservada(c, fila.cancha, horas[i])}
-            className={`h-8 rounded border ${COLOR.reservada}${marca}`} />
+            className={`h-8 rounded border transition-colors ${color}${marca}`} />
         ) : (
           <span key={i} onMouseEnter={() => onFoco(info)}
-            className={`h-8 rounded border ${COLOR[c.estado]}${marca}`} />
+            className={`h-8 rounded border transition-colors ${color}${marca}`} />
         )
       })}
     </>
