@@ -1,0 +1,4 @@
+# La función la llama la propia base (no un usuario logueado): se protege con
+# el header x-avisos-clave en lugar del JWT de Supabase.
+[functions.enviar-avisos]
+verify_jwt = false

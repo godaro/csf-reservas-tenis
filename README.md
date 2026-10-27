@@ -26,7 +26,8 @@ Horarios y ventana de habilitación se cambian en la tabla `config` (Supabase �
 2. Pegar y correr `supabase/migrations/20261026000000_inicial.sql`.
 3. Pegar y correr `supabase/migrations/20261026010000_companeros_frecuentes.sql` (compañeros frecuentes).
 4. Pegar y correr `supabase/migrations/20261026020000_bloqueos_sobre_reservas.sql` (bloqueos que pisan reservas).
-5. (Opcional, para probar) pegar y correr `supabase/seed_demo.sql`: crea socios ficticios.
+5. Pegar y correr `supabase/migrations/20261027000000_avisos_mail.sql` (avisos por mail).
+6. (Opcional, para probar) pegar y correr `supabase/seed_demo.sql`: crea socios ficticios.
 
 Socios de prueba (número / DNI):
 
@@ -51,6 +52,24 @@ npm run dev
 Conectar el repo en Netlify (como Encontralo) y cargar en
 **Site configuration → Environment variables** las dos variables de `.env.example`.
 
+## Avisos por mail
+
+Cuando se confirma o se cancela una reserva, cada jugador con mail recibe un aviso
+desde `web@clubsanfernando.org.ar` (servidor `mail.clubsanfernando.org.ar`, puerto 465 SSL).
+La confirmación trae un botón para Google Calendar y un `.ics` adjunto con recordatorio 2 horas antes.
+
+- La base anota los avisos en la tabla `avisos` y despierta a la Edge Function `enviar-avisos`.
+- Si un envío falla, se reintenta cada 5 minutos (hasta 5 veces). La reserva nunca se ve afectada.
+- Socios sin mail: el aviso queda como `sin_mail`.
+
+Instalación de la función (Supabase → **Edge Functions**):
+1. **Deploy a new function → Via Editor**, nombre `enviar-avisos`, pegar `supabase/functions/enviar-avisos/index.ts` → **Deploy**.
+2. En la función, desactivar **Verify JWT** (la protege la clave `AVISOS_CLAVE`).
+3. **Edge Functions → Secrets**: `SMTP_PASS` (contraseña de web@) y `AVISOS_CLAVE`
+   (sale de `select valor from config_privada where clave = 'avisos_clave';`).
+
+Ver cómo van: `select id, tipo, socio_nro, estado, intentos, error, creado from avisos order by id desc limit 50;`
+
 ## Cargar los socios reales
 Tabla `socios`: `nro`, `dni`, `nombre`, `apellido`, `activo`, `carnet_tenis`,
 `carnet_vence` (opcional), `celular`, `email`, `rol` (`socio` o `capitania`).
@@ -61,5 +80,6 @@ Después, borrar los de prueba: `delete from socios where nro like '99%';`
 - Validación real del carnet (Excel de socios activos → luego conexión con AF Sistemas).
 - Horario real de apertura y cierre.
 - Favoritos fijados a mano (estrellita), si los socios lo piden.
+- Confirmar con LabsIT el límite de envíos por hora de web@.
 - Recordatorios por WhatsApp (requiere WhatsApp Business API).
 - Versión app (después de validar la web).
