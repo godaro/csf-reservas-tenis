@@ -23,6 +23,8 @@ async function rpc(fn, params) {
 
 export const api = {
   login: (nro, dni) => rpc('login', { p_nro: nro, p_dni: dni }),
+  loginCapitania: (usuario, clave) => rpc('login_capitania', { p_usuario: usuario, p_clave: clave }),
+  cambiarClave: (token, actual, nueva) => rpc('cambiar_clave', { p_token: token, p_actual: actual, p_nueva: nueva }),
   logout: (token) => rpc('logout', { p_token: token }),
   dias: (token) => rpc('dias', { p_token: token }),
   disponibilidad: (token, fecha, tipo) =>

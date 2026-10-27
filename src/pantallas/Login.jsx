@@ -2,29 +2,22 @@ import { useState } from 'react'
 import { api } from '../lib/api'
 import { Aviso, BotonPrincipal, Campo } from '../componentes/ui'
 
-// modo: 'socio' (app de reservas) o 'capitania' (panel en /capitania)
+// modo: 'socio' (app de reservas: número de socio + DNI)
+//       'capitania' (panel en /capitania: usuario + clave)
 export default function Login({ onIngresar, modo = 'socio' }) {
-  const [nro, setNro] = useState('')
-  const [dni, setDni] = useState('')
+  const panel = modo === 'capitania'
+  const [id, setId] = useState('')
+  const [secreto, setSecreto] = useState('')
   const [error, setError] = useState('')
   const [enviando, setEnviando] = useState(false)
-  const panel = modo === 'capitania'
 
   async function ingresar(e) {
     e.preventDefault()
     setError('')
     setEnviando(true)
     try {
-      const r = await api.login(nro, dni)
+      const r = panel ? await api.loginCapitania(id, secreto) : await api.login(id, secreto)
       if (!r.ok) return setError(r.error)
-
-      const esCapitania = r.rol === 'capitania'
-      if (panel !== esCapitania) {
-        api.logout(r.token).catch(() => {})
-        return setError(panel
-          ? 'Esta cuenta no tiene acceso al panel de Capitanía.'
-          : 'Esta es una cuenta de Capitanía: ingresá desde el panel.')
-      }
       onIngresar({ token: r.token, nro: r.nro, nombre: r.nombre, rol: r.rol })
     } catch (err) {
       setError(err.message)
@@ -43,19 +36,23 @@ export default function Login({ onIngresar, modo = 'socio' }) {
           {panel ? 'Acceso exclusivo para la Capitanía de Tenis.' : 'Exclusivo para socios con carnet de tenis vigente.'}
         </p>
       </div>
-      <Campo id="nro" label="Número de socio" inputMode="numeric" autoComplete="username"
-        placeholder="Ej. 12345" value={nro} onChange={(e) => setNro(e.target.value)} required />
-      <Campo id="dni" label="DNI" inputMode="numeric" autoComplete="current-password"
-        placeholder="Sin puntos" value={dni} onChange={(e) => setDni(e.target.value)} required />
-      {error && (
-        <Aviso tipo="error">
-          {error}
-          {!panel && error.includes('Capitanía: ingresá') && (
-            <a href="/capitania" className="mt-1 block min-h-11 font-bold underline">Ir al panel de Capitanía</a>
-          )}
-        </Aviso>
+      {panel ? (
+        <>
+          <Campo id="usuario" label="Usuario" autoComplete="username" autoCapitalize="none" spellCheck={false}
+            value={id} onChange={(e) => setId(e.target.value)} required />
+          <Campo id="clave" label="Clave" type="password" autoComplete="current-password"
+            value={secreto} onChange={(e) => setSecreto(e.target.value)} required />
+        </>
+      ) : (
+        <>
+          <Campo id="nro" label="Número de socio" inputMode="numeric" autoComplete="username"
+            placeholder="Ej. 12345" value={id} onChange={(e) => setId(e.target.value)} required />
+          <Campo id="dni" label="DNI" inputMode="numeric" autoComplete="current-password"
+            placeholder="Sin puntos" value={secreto} onChange={(e) => setSecreto(e.target.value)} required />
+        </>
       )}
-      <BotonPrincipal type="submit" disabled={enviando || !nro || !dni}>
+      {error && <Aviso tipo="error">{error}</Aviso>}
+      <BotonPrincipal type="submit" disabled={enviando || !id || !secreto}>
         {enviando ? 'Ingresando…' : 'Ingresar'}
       </BotonPrincipal>
       {!panel && <p className="text-[13px] text-gris">¿No podés ingresar? Acercate a la Capitanía de Tenis.</p>}

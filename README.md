@@ -15,7 +15,7 @@ Capitanía de Tenis administre bloqueos. Reemplaza a Simple Solution.
 - Nunca puede haber dos reservas superpuestas en la misma cancha, aunque dos socios reserven en el mismo segundo.
 - El titular puede **cancelar en cualquier momento**. La Capitanía también.
 - La Capitanía tiene su propio panel en `/capitania` (solo cuentas con rol `capitania`): ve la grilla del día, bloquea franjas (puntuales o semanales) y puede cancelar reservas. Si un bloqueo pisa reservas, el panel las lista y pide confirmar: al confirmar se cancelan y los socios lo ven en "Mis reservas" con el motivo.
-- Login: número de socio + DNI. 5 intentos fallidos bloquean 15 minutos.
+- Login de socios: número de socio + DNI. Capitanía: usuario + clave. 5 intentos fallidos bloquean 15 minutos.
 
 Horarios y ventana de habilitación se cambian en la tabla `config` (Supabase → Table Editor).
 
@@ -28,7 +28,9 @@ Horarios y ventana de habilitación se cambian en la tabla `config` (Supabase �
 4. Pegar y correr `supabase/migrations/20261026020000_bloqueos_sobre_reservas.sql` (bloqueos que pisan reservas).
 5. Pegar y correr `supabase/migrations/20261027000000_avisos_mail.sql` (avisos por mail).
 6. Pegar y correr `supabase/migrations/20261027010000_aviso_quien_cancela.sql` (aviso también a quien cancela).
-7. (Opcional, para probar) pegar y correr `supabase/seed_demo.sql`: crea socios ficticios.
+7. Pegar y correr `supabase/migrations/20261027020000_capitania_usuario_clave.sql` (Capitanía con usuario y clave).
+8. Crear el usuario de la Capitanía: `select crear_usuario_capitania('capitania', 'Capitanía de Tenis', 'una-clave-temporal');`
+9. (Opcional, para probar) pegar y correr `supabase/seed_demo.sql`: crea socios ficticios.
 
 Socios de prueba (número / DNI):
 
@@ -40,7 +42,11 @@ Socios de prueba (número / DNI):
 | Lucía Benítez | 99003 | 30333444 | |
 | Tomás Herrera | 99006 | 30666777 | sin carnet (no puede entrar) |
 | Juan Sosa | 99008 | 30888999 | carnet vencido |
-| Capitanía de Tenis | 99900 | 20000000 | entra solo por `/capitania` |
+
+La Capitanía entra por `/capitania` con **usuario y clave** (ver paso 8). Puede haber un usuario por persona;
+cada uno cambia su clave desde el panel (Mi cuenta → Cambiar clave). Para resetear una clave olvidada,
+volver a correr `crear_usuario_capitania` con el mismo usuario. Las cuentas de Capitanía no aparecen como
+compañeros ni pueden jugar.
 
 ### 2. Correr en la compu
 ```bash

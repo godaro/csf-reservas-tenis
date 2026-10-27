@@ -345,7 +345,70 @@ export default function Capitania({ sesion, onError }) {
           </div>
         )}
       </section>
+
+      <CambiarClave sesion={sesion} onError={onError} />
     </div>
+  )
+}
+
+function CambiarClave({ sesion, onError }) {
+  const [abierto, setAbierto] = useState(false)
+  const [actual, setActual] = useState('')
+  const [nueva, setNueva] = useState('')
+  const [repetir, setRepetir] = useState('')
+  const [msg, setMsg] = useState(null) // { tipo, texto }
+  const [guardando, setGuardando] = useState(false)
+
+  async function guardar(e) {
+    e.preventDefault()
+    setMsg(null)
+    if (nueva.length < 8) return setMsg({ tipo: 'error', texto: 'La clave nueva tiene que tener al menos 8 caracteres.' })
+    if (nueva !== repetir) return setMsg({ tipo: 'error', texto: 'Las dos claves nuevas no coinciden.' })
+    setGuardando(true)
+    try {
+      await api.cambiarClave(sesion.token, actual, nueva)
+      setActual(''); setNueva(''); setRepetir('')
+      setMsg({ tipo: 'info', texto: 'Clave cambiada. Se cerraron las otras sesiones abiertas con este usuario.' })
+    } catch (err) {
+      if (err.codigo === 'SESION') onError(err)
+      else setMsg({ tipo: 'error', texto: err.message })
+    } finally {
+      setGuardando(false)
+    }
+  }
+
+  return (
+    <section className="flex flex-col gap-3 rounded-2xl border border-borde bg-white p-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-col">
+          <h2 className="text-lg font-bold">Mi cuenta</h2>
+          <span className="text-[14px] text-gris">Ingresaste como {sesion.nombre}.</span>
+        </div>
+        <button type="button" onClick={() => { setAbierto(!abierto); setMsg(null) }} aria-expanded={abierto}
+          className="min-h-11 rounded-lg border-[1.5px] border-borde px-3 text-sm font-bold text-tinta hover:border-verde">
+          {abierto ? 'Cerrar' : 'Cambiar clave'}
+        </button>
+      </div>
+      {abierto && (
+        <form onSubmit={guardar} className="grid gap-3 sm:grid-cols-3">
+          {[['clave-actual', 'Clave actual', actual, setActual, 'current-password'],
+            ['clave-nueva', 'Clave nueva (mín. 8)', nueva, setNueva, 'new-password'],
+            ['clave-repetir', 'Repetir clave nueva', repetir, setRepetir, 'new-password']].map(([id, label, v, set, ac]) => (
+            <div key={id} className="flex flex-col gap-1.5">
+              <label htmlFor={id} className="text-[13px] font-bold">{label}</label>
+              <input id={id} type="password" autoComplete={ac} value={v} onChange={(e) => set(e.target.value)} required
+                className="h-11 rounded-xl border-[1.5px] border-borde bg-white px-3 text-base outline-none focus:border-verde" />
+            </div>
+          ))}
+          {msg && <div className="sm:col-span-3"><Aviso tipo={msg.tipo}>{msg.texto}</Aviso></div>}
+          <div className="sm:col-span-3">
+            <button disabled={guardando} className="h-11 rounded-xl bg-verde px-5 font-bold text-white disabled:opacity-60">
+              {guardando ? 'Guardando…' : 'Guardar clave nueva'}
+            </button>
+          </div>
+        </form>
+      )}
+    </section>
   )
 }
 
