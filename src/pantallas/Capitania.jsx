@@ -317,7 +317,8 @@ export default function Capitania({ sesion, onError }) {
           </button>
         </form>
 
-        <div className="flex flex-col gap-2 rounded-2xl border border-borde bg-white p-4">
+        {/* Mide lo mismo que "Bloquear canchas": si hay muchos bloqueos, la lista scrollea */}
+        <div className="flex min-h-0 flex-col gap-2 rounded-2xl border border-borde bg-white p-4 md:relative">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-lg font-bold">Bloqueos del día</h2>
             {(panelVisible?.bloqueos ?? []).some((b) => !b.semanal) && (
@@ -328,6 +329,7 @@ export default function Capitania({ sesion, onError }) {
             )}
           </div>
           {panelVisible?.bloqueos.length === 0 && <p className="text-[15px] text-gris">Sin bloqueos para este día.</p>}
+          <div className="-mr-2 flex max-h-96 flex-col gap-2 overflow-y-auto pr-2 md:absolute md:inset-x-4 md:bottom-4 md:top-[72px] md:mr-0 md:max-h-none">
           {grupos.map((g) => (
             <div key={g.clave} onMouseEnter={() => setGrupoFoco(g.clave)} onMouseLeave={() => setGrupoFoco(null)}
               className={`flex items-center justify-between gap-3 rounded-xl px-3 py-2 transition ${
@@ -342,6 +344,7 @@ export default function Capitania({ sesion, onError }) {
               <button onClick={() => borrar(g)} className="min-h-11 px-2 text-sm font-bold text-error">Borrar</button>
             </div>
           ))}
+          </div>
         </div>
       </div>
 
