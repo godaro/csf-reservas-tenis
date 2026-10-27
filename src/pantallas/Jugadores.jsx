@@ -9,7 +9,7 @@ const NOTAS = {
   sin_carnet: 'Sin carnet de tenis vigente',
 }
 
-export default function Jugadores({ sesion, reserva, onConfirmada, onVolver, onOcupada, onError }) {
+export default function Jugadores({ sesion, reserva, onJugadores, onConfirmada, onVolver, onOcupada, onError }) {
   const { fecha, tipo, slot, cancha } = reserva
   const necesarios = JUGADORES_EXTRA[tipo]
   const fin = new Date(new Date(slot.inicio).getTime() + MINUTOS[tipo] * 60000).toISOString()
@@ -17,7 +17,9 @@ export default function Jugadores({ sesion, reserva, onConfirmada, onVolver, onO
   const [q, setQ] = useState('')
   const [resultados, setResultados] = useState([])
   const [buscando, setBuscando] = useState(false)
-  const [elegidos, setElegidos] = useState([])
+  // Los compañeros elegidos se guardan en la reserva: no se pierden al cambiar de cancha
+  const elegidos = reserva.jugadores ?? []
+  const setElegidos = onJugadores
   const [error, setError] = useState(null)
   const [enviando, setEnviando] = useState(false)
   const [canchaActual, setCanchaActual] = useState(cancha)

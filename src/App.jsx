@@ -8,12 +8,13 @@ import Confirmada from './pantallas/Confirmada'
 import MisReservas from './pantallas/MisReservas'
 import Capitania from './pantallas/Capitania'
 import { Aviso } from './componentes/ui'
+import { JUGADORES_EXTRA } from './lib/fechas'
 
 export default function App() {
   const [sesion, setSesion] = useState(leerSesion)
   const [pantalla, setPantalla] = useState('agenda')
   const [seleccion, setSeleccion] = useState({ fecha: null, tipo: 'single' })
-  const [reserva, setReserva] = useState(null) // { fecha, tipo, slot, cancha }
+  const [reserva, setReserva] = useState(null) // { fecha, tipo, slot, cancha, jugadores }
   const [resumen, setResumen] = useState(null)
   const [aviso, setAviso] = useState('')
 
@@ -88,16 +89,22 @@ export default function App() {
       {pantalla === 'agenda' && (
         <Agenda sesion={sesion} seleccion={seleccion} setSeleccion={setSeleccion} onError={onError}
           onVerMis={() => ir('mis')}
-          onElegirHorario={(slot, disp) => { setReserva({ fecha: disp.fecha, tipo: disp.tipo, slot }); ir('cancha') }} />
+          onElegirHorario={(slot, disp) => {
+            // Si ya había elegido compañeros, se conservan (recortados si pasó de dobles a single)
+            setReserva((r) => ({ fecha: disp.fecha, tipo: disp.tipo, slot, jugadores: (r?.jugadores ?? []).slice(0, JUGADORES_EXTRA[disp.tipo]) }))
+            ir('cancha')
+          }} />
       )}
       {pantalla === 'cancha' && reserva && (
-        <ElegirCancha reserva={reserva} onVolver={() => ir('agenda')}
-          onElegir={(cancha) => { setReserva({ ...reserva, cancha }); ir('jugadores') }} />
+        <ElegirCancha sesion={sesion} reserva={reserva} onVolver={() => ir('agenda')} onError={onError}
+          onSlot={(slot) => setReserva((r) => ({ ...r, slot }))}
+          onElegir={(cancha) => { setReserva((r) => ({ ...r, cancha })); ir('jugadores') }} />
       )}
       {pantalla === 'jugadores' && reserva && (
         <Jugadores sesion={sesion} reserva={reserva} onError={onError}
+          onJugadores={(jugadores) => setReserva((r) => ({ ...r, jugadores }))}
           onVolver={() => ir('cancha')} onOcupada={() => ir('agenda')}
-          onConfirmada={(r) => { setResumen(r); ir('ok') }} />
+          onConfirmada={(r) => { setResumen(r); setReserva(null); ir('ok') }} />
       )}
       {pantalla === 'ok' && resumen && <Confirmada resumen={resumen} onVerMis={() => ir('mis')} />}
       {pantalla === 'mis' && <MisReservas sesion={sesion} onError={onError} onReservar={() => ir('agenda')} />}

@@ -1,8 +1,27 @@
+import { useEffect, useState } from 'react'
+import { api } from '../lib/api'
 import { fechaCorta, hora } from '../lib/fechas'
 import { Aviso, Titulo, Volver } from '../componentes/ui'
 
-export default function ElegirCancha({ reserva, onElegir, onVolver }) {
+export default function ElegirCancha({ sesion, reserva, onElegir, onVolver, onSlot, onError }) {
   const { fecha, tipo, slot } = reserva
+  const [actualizando, setActualizando] = useState(true)
+
+  // Cada vez que se entra, se vuelve a consultar qué canchas siguen libres a esa hora
+  useEffect(() => {
+    let vigente = true
+    api.disponibilidad(sesion.token, fecha, tipo)
+      .then((d) => {
+        if (!vigente) return
+        const nuevo = d.slots.find((s) => s.hora === slot.hora)
+        if (nuevo) onSlot(nuevo)
+        else onSlot({ ...slot, libres: [], ocupadas: slot.libres.concat(slot.ocupadas.map((o) => o.cancha)).map((c) => ({ cancha: c, motivo: 'No disponible' })) })
+      })
+      .catch((e) => e.codigo === 'SESION' && onError(e))
+      .finally(() => vigente && setActualizando(false))
+    return () => { vigente = false }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sesion.token, fecha, tipo, slot.hora])
   const minutos = tipo === 'single' ? 60 : 90
   const fin = new Date(new Date(slot.inicio).getTime() + minutos * 60000).toISOString()
   const terminaTarde = Number(hora(fin).slice(0, 2)) >= 19
@@ -17,6 +36,9 @@ export default function ElegirCancha({ reserva, onElegir, onVolver }) {
         Elegí la cancha
       </Titulo>
 
+      {!actualizando && slot.libres.length === 0 && (
+        <Aviso tipo="alerta">Ya no quedan canchas libres a esa hora. Elegí otro horario.</Aviso>
+      )}
       {terminaTarde && <Aviso>A esa hora probablemente necesites luz: se abona con ficha en la cancha.</Aviso>}
 
       <div className="grid gap-2 sm:grid-cols-2">
