@@ -10,7 +10,7 @@
 //   SMTP_HOST     por defecto mail.clubsanfernando.org.ar
 //   SMTP_USER     por defecto web@clubsanfernando.org.ar
 //   APP_URL       por defecto https://reservas-tenis.netlify.app
-// SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY los pone Supabase solo.
+// SUPABASE_URL y SUPABASE_SECRET_KEYS (o SUPABASE_SERVICE_ROLE_KEY) los pone Supabase solo.
 // =====================================================================
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import nodemailer from 'npm:nodemailer@6.9.16'
@@ -202,8 +202,19 @@ ${tablaDatos(a, true)}
 // ---------------------------------------------------------------------
 // Envío
 // ---------------------------------------------------------------------
+// Clave interna de Supabase: la nueva (SUPABASE_SECRET_KEYS) o, si no está, la legacy
+function claveInterna() {
+  try {
+    const nuevas = JSON.parse(env('SUPABASE_SECRET_KEYS', '{}'))
+    if (nuevas.default) return nuevas.default as string
+    const primera = Object.values(nuevas)[0]
+    if (typeof primera === 'string') return primera
+  } catch { /* sin claves nuevas */ }
+  return env('SUPABASE_SERVICE_ROLE_KEY')
+}
+
 async function procesar() {
-  const sb = createClient(env('SUPABASE_URL'), env('SUPABASE_SERVICE_ROLE_KEY'), { auth: { persistSession: false } })
+  const sb = createClient(env('SUPABASE_URL'), claveInterna(), { auth: { persistSession: false } })
   const transporte = nodemailer.createTransport({
     host: env('SMTP_HOST', 'mail.clubsanfernando.org.ar'),
     port: 465,
