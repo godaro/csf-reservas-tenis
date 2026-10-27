@@ -29,8 +29,9 @@ Horarios y ventana de habilitación se cambian en la tabla `config` (Supabase �
 5. Pegar y correr `supabase/migrations/20261027000000_avisos_mail.sql` (avisos por mail).
 6. Pegar y correr `supabase/migrations/20261027010000_aviso_quien_cancela.sql` (aviso también a quien cancela).
 7. Pegar y correr `supabase/migrations/20261027020000_capitania_usuario_clave.sql` (Capitanía con usuario y clave).
-8. Crear el usuario de la Capitanía: `select crear_usuario_capitania('capitania', 'Capitanía de Tenis', 'una-clave-temporal');`
-9. (Opcional, para probar) pegar y correr `supabase/seed_demo.sql`: crea socios ficticios.
+8. Pegar y correr `supabase/migrations/20261027030000_avisos_solo_mail_valido.sql` (avisos solo a mails válidos).
+9. Crear el usuario de la Capitanía: `select crear_usuario_capitania('capitania', 'Capitanía de Tenis', 'una-clave-temporal');`
+10. (Opcional, para probar) pegar y correr `supabase/seed_demo.sql`: crea socios ficticios.
 
 Socios de prueba (número / DNI):
 
@@ -68,7 +69,7 @@ La confirmación trae un botón para Google Calendar y un `.ics` adjunto con rec
 - La base anota los avisos en la tabla `avisos` y despierta a la Edge Function `enviar-avisos`.
 - La cancelación les llega a todos los jugadores, incluido quien canceló (con un texto propio).
 - Si un envío falla, se reintenta cada 5 minutos (hasta 5 veces). La reserva nunca se ve afectada.
-- Socios sin mail: el aviso queda como `sin_mail`.
+- Socios sin mail o con mail incompleto (ej. cortado en la exportación de AF): el aviso queda como `sin_mail`.
 
 Instalación de la función (Supabase → **Edge Functions**):
 1. **Deploy a new function → Via Editor**, nombre `enviar-avisos`, pegar `supabase/functions/enviar-avisos/index.ts` → **Deploy**.
