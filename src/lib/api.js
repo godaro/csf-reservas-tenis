@@ -83,6 +83,7 @@ export const api = {
       p_token: token, p_nro: s.nro, p_dni: s.dni, p_nombre: s.nombre, p_apellido: s.apellido,
       p_email: s.email || null, p_celular: s.celular || null,
     }),
+  adminMailsCorregidos: (token) => rpc('admin_mails_corregidos', { p_token: token }),
   adminBaja: (token, nro) => rpc('admin_baja_carnet', { p_token: token, p_nro: nro }),
 }
 

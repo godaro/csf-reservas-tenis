@@ -32,6 +32,7 @@ export default function Admin({ sesion, onError }) {
         <AltaManual sesion={sesion} onListo={listo} onError={manejar} />
         <BuscarSocio sesion={sesion} refrescar={refrescar} onListo={listo} onError={manejar} />
       </div>
+      <MailsCorregidos sesion={sesion} refrescar={refrescar} onError={manejar} />
       <CambiarClave sesion={sesion} onError={onError} />
     </div>
   )
@@ -104,7 +105,7 @@ function CargarExcel({ sesion, resumen, onListo, onError }) {
     try {
       const r = await api.adminAplicar(sesion.token, filas, mantener, archivo)
       descartar()
-      onListo(`Padrón actualizado: ${r.filas} socios en el Excel · ${r.altas} altas · ${r.bajas} bajas · ${r.cambios} con datos actualizados${r.mantenidos ? ` · ${r.mantenidos} mantenidos a mano` : ''}.`)
+      onListo(`Padrón actualizado: ${r.filas} socios en el Excel · ${r.altas} altas · ${r.bajas} bajas · ${r.cambios} con datos actualizados${r.mantenidos ? ` · ${r.mantenidos} mantenidos a mano` : ''}${r.mails_al_dia ? ` · ${r.mails_al_dia} ${r.mails_al_dia === 1 ? 'mail corregido ya figura' : 'mails corregidos ya figuran'} en AF` : ''}.`)
     } catch (err) {
       onError(err)
     } finally {
@@ -358,6 +359,84 @@ function BuscarSocio({ sesion, refrescar, onListo, onError }) {
               </li>
             ))}
           </ul>
+        </>
+      )}
+    </Tarjeta>
+  )
+}
+
+// ---------------------------------------------------------------------
+// Mails corregidos por los socios (para actualizar AF Sistemas)
+// ---------------------------------------------------------------------
+const fechaHora = (iso) => new Date(iso).toLocaleString('es-AR', {
+  day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false,
+  timeZone: 'America/Argentina/Buenos_Aires',
+})
+
+function MailsCorregidos({ sesion, refrescar, onError }) {
+  const [lista, setLista] = useState(null)
+  const [bajando, setBajando] = useState(false)
+
+  useEffect(() => {
+    api.adminMailsCorregidos(sesion.token).then(setLista).catch(onError)
+  }, [sesion.token, refrescar, onError])
+
+  async function descargar() {
+    setBajando(true)
+    try {
+      const { default: writeExcelFile } = await import('write-excel-file/browser')
+      const enc = ['Nº socio', 'Apellido', 'Nombre', 'Mail en AF Sistemas', 'Mail nuevo', 'Cargado el']
+        .map((value) => ({ value, fontWeight: 'bold', color: '#ffffff', backgroundColor: '#09582D' }))
+      const filas = lista.map((m) => [
+        Number(m.nro) || m.nro, m.apellido, m.nombre, m.mail_af || '', m.mail_nuevo || '', fechaHora(m.cargado_el),
+      ])
+      const hoy = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' })
+      await writeExcelFile([enc, ...filas], {
+        sheet: 'Mails corregidos',
+        columns: [{ width: 10 }, { width: 20 }, { width: 22 }, { width: 32 }, { width: 32 }, { width: 18 }],
+        stickyRowsCount: 1,
+      }).toFile(`Mails corregidos por socios ${hoy}.xlsx`)
+    } catch (err) {
+      onError(err)
+    } finally {
+      setBajando(false)
+    }
+  }
+
+  return (
+    <Tarjeta titulo={`Mails corregidos por los socios${lista?.length ? ` (${lista.length})` : ''}`}
+      sub="Socios que cargaron o cambiaron su mail en la app. Pasale la lista a quien actualiza AF Sistemas: cuando el Excel semanal ya traiga el mail nuevo, el socio sale de la lista solo.">
+      {lista === null ? <Cargando /> : lista.length === 0 ? (
+        <p className="text-[15px] text-gris">Por ahora ningún socio corrigió su mail.</p>
+      ) : (
+        <>
+          <div className="max-h-96 overflow-auto rounded-xl border border-borde">
+            <table className="w-full min-w-[640px] text-left text-[14px]">
+              <thead className="sticky top-0 bg-fondo text-[13px] text-gris">
+                <tr>
+                  <th className="px-3 py-2 font-bold">Socio</th>
+                  <th className="px-3 py-2 font-bold">Mail en AF Sistemas</th>
+                  <th className="px-3 py-2 font-bold">Mail nuevo</th>
+                  <th className="px-3 py-2 font-bold">Cargado el</th>
+                </tr>
+              </thead>
+              <tbody>
+                {lista.map((m) => (
+                  <tr key={m.nro} className="border-t border-borde">
+                    <td className="px-3 py-2"><strong>{m.apellido}, {m.nombre}</strong><span className="block text-[13px] text-gris">Socio {m.nro}</span></td>
+                    <td className="px-3 py-2 text-gris">{m.mail_af || 'Sin mail'}</td>
+                    <td className="px-3 py-2 font-bold text-verde">{m.mail_nuevo}</td>
+                    <td className="whitespace-nowrap px-3 py-2 text-gris">{fechaHora(m.cargado_el)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div>
+            <button onClick={descargar} disabled={bajando} className={BOTON_2}>
+              {bajando ? 'Preparando…' : 'Descargar Excel'}
+            </button>
+          </div>
         </>
       )}
     </Tarjeta>
