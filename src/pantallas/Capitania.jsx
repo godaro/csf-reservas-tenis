@@ -405,7 +405,7 @@ export default function Capitania({ sesion, onError }) {
   )
 }
 
-function CambiarClave({ sesion, onError }) {
+export function CambiarClave({ sesion, onError }) {
   const [abierto, setAbierto] = useState(false)
   const [actual, setActual] = useState('')
   const [nueva, setNueva] = useState('')

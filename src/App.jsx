@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import { api, configurado, ES_PANEL, guardarSesion, leerSesion } from './lib/api'
+import { api, configurado, ES_ADMIN, ES_PANEL, ROL_RUTA, guardarSesion, leerSesion } from './lib/api'
 import Login from './pantallas/Login'
 import Agenda from './pantallas/Agenda'
 import ElegirCancha from './pantallas/ElegirCancha'
@@ -7,6 +7,7 @@ import Jugadores from './pantallas/Jugadores'
 import Confirmada from './pantallas/Confirmada'
 import MisReservas from './pantallas/MisReservas'
 import Capitania from './pantallas/Capitania'
+import Admin from './pantallas/Admin'
 import { Aviso } from './componentes/ui'
 import { JUGADORES_EXTRA } from './lib/fechas'
 import MiMail from './componentes/MiMail'
@@ -54,14 +55,27 @@ export default function App() {
     )
   }
 
-  // Una sesión solo vale en su lugar: socios en "/", Capitanía en "/capitania"
-  const sesionValida = sesion && (sesion.rol === 'capitania') === ES_PANEL ? sesion : null
+  // Una sesión solo vale en su lugar: socios en "/", Capitanía en "/capitania", Administración en "/admin"
+  const sesionValida = sesion && sesion.rol === ROL_RUTA ? sesion : null
+  const panel = ES_ADMIN ? 'admin' : ES_PANEL ? 'capitania' : null
 
   if (!sesionValida) {
     return (
-      <Marco ancho={ES_PANEL} panel={ES_PANEL}>
+      <Marco ancho={!!panel} panel={panel}>
         {aviso && <div className="mx-auto mb-4 max-w-md"><Aviso tipo="alerta">{aviso}</Aviso></div>}
-        <Login onIngresar={ingresar} modo={ES_PANEL ? 'capitania' : 'socio'} />
+        <Login onIngresar={(s) => (s.rol === ROL_RUTA ? ingresar(s) : setAviso(
+          ROL_RUTA === 'admin' ? 'Ese usuario no es de Administración.' : 'Ese usuario no es de la Capitanía. Administración entra en /admin.'))}
+          modo={panel ?? 'socio'} />
+      </Marco>
+    )
+  }
+
+  // Administración: solo la sección Socios
+  if (ES_ADMIN) {
+    return (
+      <Marco sesion={sesion} onSalir={salir} ancho panel="admin">
+        {aviso && <div className="mb-4"><Aviso tipo="error">{aviso}</Aviso></div>}
+        <Admin sesion={sesion} onError={onError} />
       </Marco>
     )
   }
@@ -69,7 +83,7 @@ export default function App() {
   // Panel de Capitanía: solo administra, sin pestañas de reserva
   if (ES_PANEL) {
     return (
-      <Marco sesion={sesion} onSalir={salir} ancho panel>
+      <Marco sesion={sesion} onSalir={salir} ancho panel="capitania">
         {aviso && <div className="mb-4"><Aviso tipo="error">{aviso}</Aviso></div>}
         <Capitania sesion={sesion} onError={onError} />
       </Marco>
@@ -115,7 +129,7 @@ export default function App() {
 }
 
 function Marco({ children, sesion, onSalir, tabs, tabActiva, onTab, ancho, panel }) {
-  if (panel) document.title = 'Panel de Capitanía · Reservas de Tenis'
+  if (panel) document.title = `${panel === 'admin' ? 'Administración' : 'Panel de Capitanía'} · Reservas de Tenis`
   return (
     <div className="flex min-h-dvh flex-col">
       <div className="flex h-1 shrink-0" aria-hidden="true">
@@ -125,7 +139,7 @@ function Marco({ children, sesion, onSalir, tabs, tabActiva, onTab, ancho, panel
         <div className={`mx-auto flex items-center gap-3 px-5 py-3 ${ancho ? 'max-w-6xl' : 'max-w-xl'}`}>
           <img src="/escudo.svg" alt="Escudo del Club San Fernando" width="34" height="42" className="h-[42px] w-[34px] shrink-0" />
           <div className="flex min-w-0 flex-1 flex-col">
-            <span className="text-[11px] font-bold tracking-[0.12em] text-verde">CLUB SAN FERNANDO{panel ? ' · CAPITANÍA' : ''}</span>
+            <span className="text-[11px] font-bold tracking-[0.12em] text-verde">CLUB SAN FERNANDO{panel === 'admin' ? ' · ADMINISTRACIÓN' : panel ? ' · CAPITANÍA' : ''}</span>
             <span className="font-display text-[22px] font-semibold leading-tight">Reservas de Tenis</span>
           </div>
           {sesion && (

@@ -33,8 +33,10 @@ Horarios, ventana de habilitación, máximo de reservas (`max_reservas`) y separ
 9. Pegar y correr `supabase/migrations/20261027040000_mail_del_socio.sql` (el socio carga su mail).
 10. Pegar y correr `supabase/migrations/20261027050000_dos_reservas.sql` (hasta 2 reservas, separadas 1 hora).
 11. Pegar y correr `supabase/migrations/20261027060000_buscador_sin_yo.sql` (el buscador no muestra al propio socio).
-12. Crear el usuario de la Capitanía: `select crear_usuario_capitania('capitania', 'Capitanía de Tenis', 'una-clave-temporal');`
-13. (Opcional, para probar) pegar y correr `supabase/seed_demo.sql`: crea socios ficticios.
+12. Pegar y correr `supabase/migrations/20261028000000_admin_socios.sql` (Administración: Excel semanal y altas manuales).
+13. Crear el usuario de la Capitanía: `select crear_usuario_capitania('capitania', 'Capitanía de Tenis', 'una-clave-temporal');`
+14. Crear el usuario de Administración: `select crear_usuario_admin('admin', 'Administración', 'una-clave-temporal');`
+15. (Opcional, para probar) pegar y correr `supabase/seed_demo.sql`: crea socios ficticios.
 
 Socios de prueba (número / DNI):
 
@@ -84,6 +86,18 @@ Instalación de la función (Supabase → **Edge Functions**):
    (sale de `select valor from config_privada where clave = 'avisos_clave';`).
 
 Ver cómo van: `select id, tipo, socio_nro, estado, intentos, error, creado from avisos order by id desc limit 50;`
+
+## Administración (`/admin`)
+
+El usuario `admin` entra en `/admin` con usuario y clave y ve solo la sección Socios:
+
+- **Excel semanal:** se sube el Excel de AF Sistemas (columnas Socio, Nombre, Teléfono, Email, Dni). Se lee y limpia
+  en el navegador (nombres, mails cortados `@gm…`, `@yahoo.com.`, `@fibertel`…), se muestra qué cambia y se aplica.
+  El Excel trae a **todos** los activos: quien no está pierde el carnet (sus reservas ya hechas se mantienen).
+- **Alta manual:** para quien paga el carnet en la semana; reserva en el momento. Si llega en el Excel siguiente queda
+  como uno más; si no llega, esa carga lo da de baja (se puede tildar para mantenerlo).
+- **Buscar socio / dar de baja** el carnet.
+- Los socios de prueba (`prueba = true`) no se tocan con las cargas. Historial: `select * from padron_cargas order by id desc;`
 
 ## Cargar los socios reales
 Tabla `socios`: `nro`, `dni`, `nombre`, `apellido`, `activo`, `carnet_tenis`,

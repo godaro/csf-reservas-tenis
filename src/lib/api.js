@@ -72,13 +72,29 @@ export const api = {
       p_cancelar_reservas: cancelarReservas,
     }),
   borrarBloqueo: (token, id) => rpc('borrar_bloqueo', { p_token: token, p_id: id }),
+  // Administración (/admin)
+  adminResumen: (token) => rpc('admin_resumen', { p_token: token }),
+  adminPrevisualizar: (token, filas) => rpc('admin_previsualizar_padron', { p_token: token, p_filas: filas }),
+  adminAplicar: (token, filas, mantener, archivo) =>
+    rpc('admin_aplicar_padron', { p_token: token, p_filas: filas, p_mantener: mantener, p_archivo: archivo }),
+  adminBuscar: (token, q) => rpc('admin_buscar_socios', { p_token: token, p_q: q }),
+  adminAlta: (token, s) =>
+    rpc('admin_alta_manual', {
+      p_token: token, p_nro: s.nro, p_dni: s.dni, p_nombre: s.nombre, p_apellido: s.apellido,
+      p_email: s.email || null, p_celular: s.celular || null,
+    }),
+  adminBaja: (token, nro) => rpc('admin_baja_carnet', { p_token: token, p_nro: nro }),
 }
 
-// ¿Estamos en el panel de Capitanía (/capitania) o en la app de socios (/)?
-export const ES_PANEL = window.location.pathname.replace(/\/+$/, '') === '/capitania'
+// ¿Dónde estamos? App de socios (/), panel de Capitanía (/capitania) o Administración (/admin)
+const RUTA = window.location.pathname.replace(/\/+$/, '')
+export const ES_PANEL = RUTA === '/capitania'
+export const ES_ADMIN = RUTA === '/admin'
+// Rol que corresponde a esta dirección
+export const ROL_RUTA = ES_ADMIN ? 'admin' : ES_PANEL ? 'capitania' : 'socio'
 
-// Sesión guardada en el dispositivo (separada para socio y para Capitanía)
-const CLAVE = ES_PANEL ? 'csf-tenis-sesion-capitania' : 'csf-tenis-sesion'
+// Sesión guardada en el dispositivo (separada para socio, Capitanía y Administración)
+const CLAVE = ES_ADMIN ? 'csf-tenis-sesion-admin' : ES_PANEL ? 'csf-tenis-sesion-capitania' : 'csf-tenis-sesion'
 
 export function leerSesion() {
   try {

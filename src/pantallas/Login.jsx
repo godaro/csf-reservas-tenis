@@ -4,8 +4,9 @@ import { Aviso, BotonPrincipal, Campo } from '../componentes/ui'
 
 // modo: 'socio' (app de reservas: número de socio + DNI)
 //       'capitania' (panel en /capitania: usuario + clave)
+//       'admin' (Administración en /admin: usuario + clave)
 export default function Login({ onIngresar, modo = 'socio' }) {
-  const panel = modo === 'capitania'
+  const panel = modo !== 'socio'
   const [id, setId] = useState('')
   const [secreto, setSecreto] = useState('')
   const [error, setError] = useState('')
@@ -30,10 +31,10 @@ export default function Login({ onIngresar, modo = 'socio' }) {
     <form onSubmit={ingresar} className="mx-auto flex w-full max-w-md flex-col gap-5 pt-2">
       <div className="flex flex-col gap-1.5">
         <h1 className="font-display text-4xl font-semibold leading-tight">
-          {panel ? 'Panel de Capitanía' : 'Ingresá para reservar'}
+          {modo === 'admin' ? 'Administración' : panel ? 'Panel de Capitanía' : 'Ingresá para reservar'}
         </h1>
         <p className="text-[15px] text-gris">
-          {panel ? 'Acceso exclusivo para la Capitanía de Tenis.' : 'Exclusivo para socios con carnet de tenis vigente.'}
+          {modo === 'admin' ? 'Padrón de socios con carnet de tenis.' : panel ? 'Acceso exclusivo para la Capitanía de Tenis.' : 'Exclusivo para socios con carnet de tenis vigente.'}
         </p>
       </div>
       {panel ? (
