@@ -324,6 +324,14 @@ function BuscarSocio({ sesion, refrescar, onListo, onError }) {
     } catch (err) { onError(err) }
   }
 
+  async function reactivar(s) {
+    if (!window.confirm(`${s.nombre} ${s.apellido} · Socio ${s.nro}\n\n¿Volver a darle el carnet de tenis? Va a poder reservar en el momento.`)) return
+    try {
+      const r = await api.adminReactivar(sesion.token, s.nro)
+      onListo(`${r.nombre} (socio ${r.nro}) volvió a tener el carnet vigente. Queda como alta manual hasta que llegue en el Excel.`)
+    } catch (err) { onError(err) }
+  }
+
   const sinBusqueda = q.trim() === ''
 
   return (
@@ -342,7 +350,7 @@ function BuscarSocio({ sesion, refrescar, onListo, onError }) {
                 <span className="flex min-w-0 flex-col gap-0.5">
                   <span className="text-[15px] font-bold">{s.nombre} {s.apellido}</span>
                   <span className="text-[13px] text-gris">
-                    Socio {s.nro} · DNI {s.dni}{s.prueba ? ' · de prueba' : ''}
+                    Socio {s.nro} · DNI {s.dni}{s.prueba ? ' · de prueba' : ''}{s.carnet ? '' : ' · sin carnet'}
                     {s.origen === 'manual' && s.carnet ? ` · alta manual ${s.alta_manual_en ? momento(s.alta_manual_en) : ''}` : ''}
                   </span>
                   <span className={`truncate text-[13px] ${s.mail_ok ? 'text-gris' : 'text-[#9a3412]'}`}>
@@ -354,7 +362,9 @@ function BuscarSocio({ sesion, refrescar, onListo, onError }) {
                     Dar de baja
                   </button>
                 ) : (
-                  <span className="shrink-0 rounded-full bg-apagado px-3 py-1 text-[13px] font-bold text-gris">Sin carnet</span>
+                  <button onClick={() => reactivar(s)} className="min-h-11 shrink-0 rounded-lg border-[1.5px] border-verde px-3 text-sm font-bold text-verde hover:bg-verde-claro">
+                    Volver a dar de alta
+                  </button>
                 )}
               </li>
             ))}

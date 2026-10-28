@@ -85,6 +85,7 @@ export const api = {
     }),
   adminMailsCorregidos: (token) => rpc('admin_mails_corregidos', { p_token: token }),
   adminBaja: (token, nro) => rpc('admin_baja_carnet', { p_token: token, p_nro: nro }),
+  adminReactivar: (token, nro) => rpc('admin_reactivar_carnet', { p_token: token, p_nro: nro }),
 }
 
 // ¿Dónde estamos? App de socios (/), panel de Capitanía (/capitania) o Administración (/admin)

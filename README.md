@@ -36,8 +36,9 @@ Horarios, ventana de habilitación, máximo de reservas (`max_reservas`) y separ
 12. Pegar y correr `supabase/migrations/20261028000000_admin_socios.sql` (Administración: Excel semanal y altas manuales).
 13. Crear el usuario de la Capitanía: `select crear_usuario_capitania('capitania', 'Capitanía de Tenis', 'una-clave-temporal');`
 14. Pegar y correr `supabase/migrations/20261028010000_admin_mails_corregidos.sql` (lista de mails corregidos por los socios).
-15. Crear el usuario de Administración: `select crear_usuario_admin('admin', 'Administración', 'una-clave-temporal');`
-16. (Opcional, para probar) pegar y correr `supabase/seed_demo.sql`: crea socios ficticios.
+15. Pegar y correr `supabase/migrations/20261028020000_admin_reactivar.sql` (botón "Volver a dar de alta").
+16. Crear el usuario de Administración: `select crear_usuario_admin('admin', 'Administración', 'una-clave-temporal');`
+17. (Opcional, para probar) pegar y correr `supabase/seed_demo.sql`: crea socios ficticios.
 
 Socios de prueba (número / DNI):
 
@@ -97,7 +98,8 @@ El usuario `admin` entra en `/admin` con usuario y clave y ve solo la sección S
   El Excel trae a **todos** los activos: quien no está pierde el carnet (sus reservas ya hechas se mantienen).
 - **Alta manual:** para quien paga el carnet en la semana; reserva en el momento. Si llega en el Excel siguiente queda
   como uno más; si no llega, esa carga lo da de baja (se puede tildar para mantenerlo).
-- **Buscar socio / dar de baja** el carnet.
+- **Buscar socio / dar de baja** el carnet, o **volver a dar de alta** a uno sin carnet con los datos de su ficha
+  (queda como alta manual hasta que llegue en el Excel).
 - **Mails corregidos por los socios:** lista (descargable en Excel) para actualizar AF Sistemas. Cuando el Excel
   semanal ya trae el mail nuevo, el socio sale de la lista solo.
 - Los socios de prueba (`prueba = true`) no se tocan con las cargas. Historial: `select * from padron_cargas order by id desc;`
