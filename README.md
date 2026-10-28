@@ -32,8 +32,9 @@ Horarios, ventana de habilitación, máximo de reservas (`max_reservas`) y separ
 8. Pegar y correr `supabase/migrations/20261027030000_avisos_solo_mail_valido.sql` (avisos solo a mails válidos).
 9. Pegar y correr `supabase/migrations/20261027040000_mail_del_socio.sql` (el socio carga su mail).
 10. Pegar y correr `supabase/migrations/20261027050000_dos_reservas.sql` (hasta 2 reservas, separadas 1 hora).
-11. Crear el usuario de la Capitanía: `select crear_usuario_capitania('capitania', 'Capitanía de Tenis', 'una-clave-temporal');`
-12. (Opcional, para probar) pegar y correr `supabase/seed_demo.sql`: crea socios ficticios.
+11. Pegar y correr `supabase/migrations/20261027060000_buscador_sin_yo_ni_completos.sql` (el buscador no muestra al propio socio ni a quien ya tiene el máximo).
+12. Crear el usuario de la Capitanía: `select crear_usuario_capitania('capitania', 'Capitanía de Tenis', 'una-clave-temporal');`
+13. (Opcional, para probar) pegar y correr `supabase/seed_demo.sql`: crea socios ficticios.
 
 Socios de prueba (número / DNI):
 
