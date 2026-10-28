@@ -45,9 +45,7 @@ export default function Agenda({ sesion, seleccion, setSeleccion, onElegirHorari
 
       {bloqueadoPorReserva && (
         <Aviso tipo="alerta">
-          <strong className="block">
-            {disp.max_reservas ? `Ya tenés ${disp.max_reservas} reservas activas, el máximo` : 'Ya tenés una reserva activa'}
-          </strong>
+          {disp.max_reservas ? `Ya tenés ${disp.max_reservas} reservas activas.` : 'Ya tenés una reserva activa.'}{' '}
           <button onClick={onVerMis} className="min-h-11 font-bold underline">Ver mis reservas</button>
         </Aviso>
       )}
