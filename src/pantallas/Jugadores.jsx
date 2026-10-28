@@ -4,7 +4,6 @@ import { fechaCorta, hora, JUGADORES_EXTRA, MINUTOS } from '../lib/fechas'
 import { Aviso, BotonPrincipal, Campo, Cargando, Titulo, Volver } from '../componentes/ui'
 
 const NOTAS = {
-  ok: 'Carnet de tenis vigente',
   con_reserva: 'Ya tiene el máximo de reservas',
   muy_cerca: 'Tiene otra reserva muy cerca de este horario',
   sin_carnet: 'Sin carnet de tenis vigente',
@@ -174,7 +173,7 @@ export default function Jugadores({ sesion, reserva, onJugadores, onConfirmada, 
                 <span className="flex flex-col gap-0.5">
                   <span className="text-base font-bold">{s.nombre}</span>
                   <span className={`text-[13px] ${s.estado === 'ok' ? 'text-gris' : 'text-[#9a3412]'}`}>
-                    Socio {s.nro} · {elegido(s.nro) ? 'Ya está en el partido' : NOTAS[s.estado]}
+                    Socio {s.nro}{elegido(s.nro) ? ' · Ya está en el partido' : s.estado !== 'ok' ? ` · ${NOTAS[s.estado]}` : ''}
                   </span>
                 </span>
                 {puede && <span className="text-sm font-bold text-verde">Sumar</span>}
