@@ -72,6 +72,11 @@ export const api = {
       p_cancelar_reservas: cancelarReservas,
     }),
   borrarBloqueo: (token, id) => rpc('borrar_bloqueo', { p_token: token, p_id: id }),
+  capitaniaReserva: (token, id) => rpc('capitania_reserva', { p_token: token, p_id: id }),
+  capitaniaMover: (token, id, cancha, motivo) =>
+    rpc('capitania_mover_cancha', { p_token: token, p_id: id, p_cancha: cancha, p_motivo: motivo || null }),
+  capitaniaReemplazar: (token, id, sale, entra, motivo) =>
+    rpc('capitania_reemplazar_jugador', { p_token: token, p_id: id, p_sale: sale, p_entra: entra, p_motivo: motivo || null }),
   // Administración (/admin)
   adminResumen: (token) => rpc('admin_resumen', { p_token: token }),
   adminPrevisualizar: (token, filas) => rpc('admin_previsualizar_padron', { p_token: token, p_filas: filas }),

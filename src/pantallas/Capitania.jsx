@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { api } from '../lib/api'
 import { fechaCorta, fechaLarga, hoy, sumarDias } from '../lib/fechas'
 import { Aviso, Cargando, Titulo } from '../componentes/ui'
+import DetalleReserva from './DetalleReserva'
 
 const MOTIVOS = ['Escuela de Tenis', 'Clases', 'Interclubes', 'Torneo interno', 'Mantenimiento', 'Lluvia', 'Otro']
 const HORAS = Array.from({ length: 29 }, (_, i) => {
@@ -38,6 +39,7 @@ export default function Capitania({ sesion, onError }) {
   const [semanal, setSemanal] = useState(false)
   const [guardando, setGuardando] = useState(false)
   const [conflicto, setConflicto] = useState(null) // { datos, afectadas: [...] }
+  const [detalle, setDetalle] = useState(null) // id de la reserva abierta en el detalle
   // Si cambian los datos del formulario, el aviso anterior ya no aplica
   useEffect(() => { setConflicto(null) }, [canchas, desde, hasta, motivo, motivoOtro, semanal, fecha])
   useEffect(() => { setFoco(null); setGrupoFoco(null) }, [fecha])
@@ -183,16 +185,8 @@ export default function Capitania({ sesion, onError }) {
     } catch (e) { manejar(e); cargar() }
   }
 
-  async function cancelarReserva(celda, cancha, horaTxt) {
-    if (!window.confirm(`Cancha ${cancha} · ${horaTxt}\n${celda.detalle}\n\n¿Cancelar esta reserva?`)) return
-    setError('')
-    setOk('')
-    try {
-      await api.cancelar(sesion.token, celda.reserva_id)
-      await cargar()
-      setOk(`Reserva de la cancha ${cancha} cancelada.`)
-    } catch (e) { manejar(e); cargar() }
-  }
+  // Tocar una reserva abre su detalle: cambiar cancha, reemplazar jugadores o cancelarla
+  const abrirReserva = (celda) => { setError(''); setOk(''); setDetalle(celda.reserva_id) }
 
   return (
     <div className="flex flex-col gap-5">
@@ -222,7 +216,7 @@ export default function Capitania({ sesion, onError }) {
 
       <div className="flex flex-wrap gap-4 text-[13px] text-gris">
         <span className="inline-flex items-center gap-1.5"><span className="size-3.5 rounded border border-borde bg-white" />Libre</span>
-        <span className="inline-flex items-center gap-1.5"><span className="size-3.5 rounded bg-[#9ccbae]" />Reservada (tocá para cancelar)</span>
+        <span className="inline-flex items-center gap-1.5"><span className="size-3.5 rounded bg-[#9ccbae]" />Reservada (tocá para ver o modificar)</span>
         <span className="inline-flex items-center gap-1.5"><span className="size-3.5 rounded bg-azul" />Bloqueada</span>
       </div>
 
@@ -248,7 +242,7 @@ export default function Capitania({ sesion, onError }) {
               <span key={h} className="whitespace-nowrap pb-1 text-[11px] font-bold text-gris">{i % 2 === 0 ? h : ''}</span>
             ))}
             {grilla.filas.map((f) => (
-              <Fila key={f.cancha} fila={f} horas={grilla.horas} onReservada={panelVisible ? cancelarReserva : () => {}}
+              <Fila key={f.cancha} fila={f} horas={grilla.horas} onReservada={panelVisible ? abrirReserva : () => {}}
                 onFoco={setFoco} enBloque={enBloqueFoco} />
             ))}
           </div>
@@ -401,6 +395,12 @@ export default function Capitania({ sesion, onError }) {
       </section>
 
       <CambiarClave sesion={sesion} onError={onError} />
+
+      {detalle && (
+        <DetalleReserva sesion={sesion} id={detalle} onError={onError}
+          onCerrar={() => setDetalle(null)}
+          onCambio={(texto, cerrar) => { setOk(texto); cargar(); if (cerrar) setDetalle(null) }} />
+      )}
     </div>
   )
 }

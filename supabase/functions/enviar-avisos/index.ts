@@ -22,7 +22,8 @@ const ZONA = 'America/Argentina/Buenos_Aires'
 
 export type Aviso = {
   id: number
-  tipo: 'confirmada' | 'cancelada'
+  tipo: 'confirmada' | 'cancelada' | 'modificada' | 'quitado'
+  detalle?: string | null
   email: string
   nombre: string
   reserva_id: string
@@ -151,9 +152,11 @@ const boton = (href: string, texto: string, principal = true) =>
 export function armarMail(a: Aviso) {
   const cuando = `${diaLargo(a.fecha)}, ${sinCero(a.hora_inicio)}`
   if (a.tipo === 'confirmada') {
-    const intro = a.es_titular
-      ? 'Tu reserva quedó confirmada.'
-      : `${a.titular} te sumó a un partido.`
+    const intro = a.detalle
+      ? a.detalle
+      : a.es_titular
+        ? 'Tu reserva quedó confirmada.'
+        : `${a.titular} te sumó a un partido.`
     const pie = a.es_titular
       ? 'Si no pueden ir, cancelala desde “Mis reservas” así otro socio aprovecha la cancha.'
       : `Si no podés ir, avisale a ${a.titular} para que la cancele.`
@@ -178,6 +181,51 @@ ${tablaDatos(a)}
       asunto, html, texto,
       adjuntos: [{ filename: 'partido-tenis.ics', content: ics(a), contentType: 'text/calendar; charset=utf-8; method=PUBLISH' }],
     }
+  }
+
+  if (a.tipo === 'modificada') {
+    const asunto = `Cambio en tu reserva · Cancha ${a.cancha} · ${cuando}`
+    const intro = a.detalle ?? 'La Capitanía de Tenis modificó tu reserva.'
+    const html = marco(asunto, `
+<h1 style="margin:0 0 8px;font-size:24px">Cambió tu partido</h1>
+<p style="margin:0 0 4px;font-size:16px;line-height:1.5">Hola ${esc(a.nombre)},</p>
+<p style="margin:0;font-size:16px;line-height:1.5">${esc(intro)}</p>
+${tablaDatos(a)}
+<div>${boton(linkGoogleCalendar(a), 'Actualizar en Google Calendar')}${boton(`${APP_URL}/`, 'Ver mis reservas', false)}</div>
+<p style="margin:16px 0 0;font-size:13px;color:#5b6660;line-height:1.5">Va adjunto el evento actualizado para Apple Calendar u Outlook.</p>`)
+    const texto = [
+      `Hola ${a.nombre},`, '', intro, '',
+      `Día: ${diaLargo(a.fecha)}`,
+      `Horario: ${sinCero(a.hora_inicio)} a ${sinCero(a.hora_fin)}`,
+      `Cancha: ${a.cancha} (${a.tipo_partido})`,
+      a.otros?.length ? `Con: ${listaNombres(a.otros)}` : '',
+      '', `Reservas: ${APP_URL}`,
+    ].filter((l, i, arr) => l !== '' || arr[i - 1] !== '').join('\n')
+    return {
+      asunto, html, texto,
+      adjuntos: [{ filename: 'partido-tenis.ics', content: ics(a), contentType: 'text/calendar; charset=utf-8; method=PUBLISH' }],
+    }
+  }
+
+  if (a.tipo === 'quitado') {
+    const asunto = `Ya no figurás en este partido · Cancha ${a.cancha} · ${cuando}`
+    const intro = a.detalle ?? 'La Capitanía de Tenis te sacó de este partido.'
+    const html = marco(asunto, `
+<h1 style="margin:0 0 8px;font-size:24px">Ya no figurás en este partido</h1>
+<p style="margin:0 0 4px;font-size:16px;line-height:1.5">Hola ${esc(a.nombre)},</p>
+<p style="margin:0;font-size:16px;line-height:1.5">${esc(intro)}</p>
+${tablaDatos({ ...a, otros: null }, true)}
+<p style="margin:0 0 12px;font-size:15px;line-height:1.5">Si es un error, consultá en la Capitanía de Tenis.</p>
+<div>${boton(`${APP_URL}/`, 'Ver mis reservas')}</div>
+<p style="margin:16px 0 0;font-size:13px;color:#5b6660;line-height:1.5">Si lo habías agendado, acordate de borrarlo de tu calendario.</p>`)
+    const texto = [
+      `Hola ${a.nombre},`, '', intro, '',
+      `Día: ${diaLargo(a.fecha)}`,
+      `Horario: ${sinCero(a.hora_inicio)} a ${sinCero(a.hora_fin)}`,
+      `Cancha: ${a.cancha}`, '',
+      'Si es un error, consultá en la Capitanía de Tenis.',
+    ].join('\n')
+    return { asunto, html, texto, adjuntos: [] as { filename: string; content: string; contentType: string }[] }
   }
 
   const porque = a.yo_cancele
@@ -234,7 +282,7 @@ async function procesar() {
 
     for (const a of avisos) {
       // Una confirmación de una reserva que ya se canceló no se manda
-      if (a.tipo === 'confirmada' && a.estado_reserva !== 'activa') {
+      if ((a.tipo === 'confirmada' || a.tipo === 'modificada') && a.estado_reserva !== 'activa') {
         await sb.rpc('avisos_resultado', { p_id: a.id, p_resultado: 'descartado' })
         resumen.descartados++
         continue

@@ -14,6 +14,8 @@ Capitanía de Tenis administre bloqueos. Reemplaza a Simple Solution.
 - Todos los jugadores tienen que tener **carnet de tenis vigente**.
 - Nunca puede haber dos reservas superpuestas en la misma cancha, aunque dos socios reserven en el mismo segundo.
 - El titular puede **cancelar en cualquier momento**. La Capitanía también.
+- Desde el panel, la Capitanía toca una reserva y puede **cambiarla de cancha** (mismo horario) o **reemplazar a un jugador**
+  (el que entra cumple las mismas reglas: carnet, máximo de reservas y separación). Avisa por mail a todos los afectados.
 - La Capitanía tiene su propio panel en `/capitania` (solo cuentas con rol `capitania`): ve la grilla del día, bloquea franjas (puntuales o semanales) y puede cancelar reservas. Si un bloqueo pisa reservas, el panel las lista y pide confirmar: al confirmar se cancelan y los socios lo ven en "Mis reservas" con el motivo.
 - Login de socios: número de socio + DNI. Capitanía: usuario + clave. 5 intentos fallidos bloquean 15 minutos.
 
@@ -37,8 +39,10 @@ Horarios, ventana de habilitación, máximo de reservas (`max_reservas`) y separ
 13. Crear el usuario de la Capitanía: `select crear_usuario_capitania('capitania', 'Capitanía de Tenis', 'una-clave-temporal');`
 14. Pegar y correr `supabase/migrations/20261028010000_admin_mails_corregidos.sql` (lista de mails corregidos por los socios).
 15. Pegar y correr `supabase/migrations/20261028020000_admin_reactivar.sql` (botón "Volver a dar de alta").
-16. Crear el usuario de Administración: `select crear_usuario_admin('admin', 'Administración', 'una-clave-temporal');`
-17. (Opcional, para probar) pegar y correr `supabase/seed_demo.sql`: crea socios ficticios.
+16. Volver a desplegar la Edge Function `enviar-avisos` con el `index.ts` nuevo y **después** pegar y correr
+    `supabase/migrations/20261028030000_capitania_editar_reserva.sql` (la Capitanía modifica reservas).
+17. Crear el usuario de Administración: `select crear_usuario_admin('admin', 'Administración', 'una-clave-temporal');`
+18. (Opcional, para probar) pegar y correr `supabase/seed_demo.sql`: crea socios ficticios.
 
 Socios de prueba (número / DNI):
 
