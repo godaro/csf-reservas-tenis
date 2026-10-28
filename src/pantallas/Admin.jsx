@@ -116,7 +116,11 @@ function CargarExcel({ sesion, resumen, onListo, onError }) {
       descartar()
       onListo(`Padrón actualizado: ${r.filas} socios con carnet · ${r.altas} altas · ${r.bajas} bajas · ${r.cambios} con datos actualizados${r.mantenidos ? ` · ${r.mantenidos} mantenidos a mano` : ''}${r.mails_al_dia ? ` · ${r.mails_al_dia} ${r.mails_al_dia === 1 ? 'mail corregido ya figura' : 'mails corregidos ya figuran'} en AF` : ''}.`)
     } catch (err) {
-      onError(err)
+      // Si se cortó la conexión, la carga pudo haberse guardado igual: se recarga el resumen
+      if (!err.code && /fetch|network|load failed/i.test(err.message)) {
+        descartar()
+        onListo('Se cortó la conexión con el servidor. Fijate arriba en "Última carga": si figura la hora de recién, el padrón se guardó; si no, volvé a subir el archivo.')
+      } else onError(err)
     } finally {
       setAplicando(false)
     }
