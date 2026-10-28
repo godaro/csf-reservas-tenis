@@ -1,8 +1,17 @@
 import { useEffect, useState } from 'react'
 import { escuchar, esCelular, esIOS, instalar, puedeInstalar, yaInstalada } from '../lib/instalar'
 
+// Oculta hasta que la app tenga su dirección definitiva (subdominio del Club):
+// así nadie la instala con la dirección de Netlify. Para mostrarla, poner true.
+const MOSTRAR = false
+
 // Tarjeta para tener la web como app en el celular (ícono en la pantalla de inicio)
 export default function InstalarApp() {
+  if (!MOSTRAR) return null
+  return <Tarjeta />
+}
+
+function Tarjeta() {
   const [, refrescar] = useState(0)
   const [abierto, setAbierto] = useState(false)
   useEffect(() => escuchar(() => refrescar((n) => n + 1)), [])
