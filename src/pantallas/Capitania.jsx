@@ -17,7 +17,7 @@ const COLOR = {
 // Mismo bloque bajo el mouse (todas sus celdas juntas)
 const COLOR_FOCO = {
   reservada: 'bg-[#5fa97c] border-[#3f8a5d]',
-  bloqueada: 'bg-[#3d63ad] border-[#22427f]',
+  bloqueada: 'bg-[#3d63ad] border-[#3d63ad]',
 }
 
 export default function Capitania({ sesion, onError }) {
@@ -333,7 +333,7 @@ export default function Capitania({ sesion, onError }) {
           {grupos.map((g) => (
             <div key={g.clave} onMouseEnter={() => setGrupoFoco(g.clave)} onMouseLeave={() => setGrupoFoco(null)}
               className={`flex items-center justify-between gap-3 rounded-xl px-3 py-2 transition ${
-                gruposDeFoco.includes(g.clave) || grupoFoco === g.clave ? 'bg-[#cfdaf0] ring-2 ring-azul' : 'bg-azul-claro'
+                gruposDeFoco.includes(g.clave) || grupoFoco === g.clave ? 'bg-[#cfdaf0]' : 'bg-azul-claro'
               }`}>
               <span className="flex flex-col">
                 <strong className="text-azul">
@@ -502,7 +502,7 @@ function Fila({ fila, horas, onReservada, onFoco, resaltada, enBloque }) {
       <span className="flex h-8 items-center text-[13px] font-bold">Cancha {fila.cancha}</span>
       {fila.celdas.map((c, i) => {
         const info = { cancha: fila.cancha, hora: horas[i], estado: c.estado, detalle: c.detalle, reserva_id: c.reserva_id }
-        const marca = resaltada(fila.cancha, horas[i]) ? ' ring-2 ring-dorado ring-offset-1' : ''
+        const marca = c.estado !== 'bloqueada' && resaltada(fila.cancha, horas[i]) ? ' ring-2 ring-dorado ring-offset-1' : ''
         const color = enBloque(fila.cancha, horas[i], c) ? `${COLOR_FOCO[c.estado]} cursor-pointer` : COLOR[c.estado]
         return c.estado === 'reservada' ? (
           <button key={i} aria-label={`Cancha ${fila.cancha}, ${horas[i]}: ${c.detalle}`}
