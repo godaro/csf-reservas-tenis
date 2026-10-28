@@ -117,7 +117,7 @@ export default function MisReservas({ sesion, onReservar, onError }) {
       <InstalarApp />
 
       <p className="text-[13px] leading-snug text-gris">
-        Podés tener hasta 2 reservas activas, como titular o como jugador invitado, con al menos 1 hora entre una y otra.
+        Podés tener hasta 2 reservas activas, como titular o como jugador invitado, con al menos 3 horas entre una y otra.
       </p>
     </div>
   )

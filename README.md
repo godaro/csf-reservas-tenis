@@ -10,7 +10,7 @@ Capitanía de Tenis administre bloqueos. Reemplaza a Simple Solution.
 - 15 canchas, de 08:00 a 22:00, turnos que arrancan cada media hora.
 - **Single 60 min · Dobles 90 min.**
 - Los turnos del día D se habilitan a las **22:00 de D-2** (ej.: el domingo se habilita el viernes 22:00).
-- **Hasta 2 reservas activas por socio**, como titular o como jugador, con **al menos 1 hora libre** entre una y otra.
+- **Hasta 2 reservas activas por socio**, como titular o como jugador, con **al menos 3 horas libres** entre una y otra (`config.separacion_min` = 180).
 - Todos los jugadores tienen que tener **carnet de tenis vigente**.
 - Nunca puede haber dos reservas superpuestas en la misma cancha, aunque dos socios reserven en el mismo segundo.
 - El titular puede **cancelar en cualquier momento**. La Capitanía también.
