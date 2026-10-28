@@ -123,10 +123,7 @@ function Marco({ children, sesion, onSalir, tabs, tabActiva, onTab, ancho, panel
       </div>
       <header className="border-b border-borde bg-white">
         <div className={`mx-auto flex items-center gap-3 px-5 py-3 ${ancho ? 'max-w-6xl' : 'max-w-xl'}`}>
-          <svg width="34" height="34" viewBox="0 0 34 34" fill="none" aria-hidden="true" className="shrink-0">
-            <circle cx="17" cy="17" r="15" stroke="#09582D" strokeWidth="2.2" />
-            <path d="M5 9c5 3 7 9 5 17M29 9c-5 3-7 9-5 17" stroke="#18305B" strokeWidth="2.2" strokeLinecap="round" />
-          </svg>
+          <img src="/escudo.svg" alt="Escudo del Club San Fernando" width="34" height="42" className="h-[42px] w-[34px] shrink-0" />
           <div className="flex min-w-0 flex-1 flex-col">
             <span className="text-[11px] font-bold tracking-[0.12em] text-verde">CLUB SAN FERNANDO{panel ? ' · CAPITANÍA' : ''}</span>
             <span className="font-display text-[22px] font-semibold leading-tight">Reservas de Tenis</span>
