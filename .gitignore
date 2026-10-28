@@ -28,3 +28,6 @@ dist-ssr
 *padron*
 *.xlsx
 *.csv
+
+# El lector del Excel sí va al repo (no tiene datos)
+!src/lib/padron.js
