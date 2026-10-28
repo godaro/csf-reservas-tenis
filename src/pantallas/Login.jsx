@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { api } from '../lib/api'
 import { Aviso, BotonPrincipal, Campo } from '../componentes/ui'
+import InstalarApp from '../componentes/InstalarApp'
 
 // modo: 'socio' (app de reservas: número de socio + DNI)
 //       'capitania' (panel en /capitania: usuario + clave)
@@ -57,6 +58,7 @@ export default function Login({ onIngresar, modo = 'socio' }) {
         {enviando ? 'Ingresando…' : 'Ingresar'}
       </BotonPrincipal>
       {!panel && <p className="text-[13px] text-gris">¿No podés ingresar? Acercate a la Capitanía de Tenis.</p>}
+      {!panel && <InstalarApp />}
     </form>
   )
 }

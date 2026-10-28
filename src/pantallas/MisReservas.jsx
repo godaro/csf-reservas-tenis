@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { api } from '../lib/api'
 import { fechaCorta } from '../lib/fechas'
 import { Aviso, BotonPrincipal, Cargando, Titulo } from '../componentes/ui'
+import InstalarApp from '../componentes/InstalarApp'
 import MiMail from '../componentes/MiMail'
 
 // Avisos de cancelación que el socio ya vio (se guardan en el dispositivo)
@@ -113,6 +114,7 @@ export default function MisReservas({ sesion, onReservar, onError }) {
       })}
 
       <MiMail sesion={sesion} modo="ficha" onError={onError} />
+      <InstalarApp />
 
       <p className="text-[13px] leading-snug text-gris">
         Podés tener hasta 2 reservas activas, como titular o como jugador invitado, con al menos 1 hora entre una y otra.
