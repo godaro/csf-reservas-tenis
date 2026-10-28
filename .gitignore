@@ -31,3 +31,4 @@ dist-ssr
 
 # El lector del Excel sí va al repo (no tiene datos)
 !src/lib/padron.js
+!src/lib/padronPdf.js

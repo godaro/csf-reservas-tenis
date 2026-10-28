@@ -41,7 +41,7 @@ export default function Admin({ sesion, onError }) {
 function lineaResumen(r) {
   const partes = [`${r.con_carnet} con carnet vigente`]
   if (r.manuales) partes.push(`${r.manuales} ${r.manuales === 1 ? 'alta manual' : 'altas manuales'}`)
-  partes.push(r.ultima ? `Última carga: ${momento(r.ultima.cargado)}` : 'Todavía no se cargó ningún Excel desde acá')
+  partes.push(r.ultima ? `Última carga: ${momento(r.ultima.cargado)}` : 'Todavía no se cargó ningún padrón desde acá')
   return partes.join(' · ')
 }
 
@@ -71,10 +71,11 @@ function CargarExcel({ sesion, resumen, onListo, onError }) {
   const [filas, setFilas] = useState(null)
   const [plan, setPlan] = useState(null)
   const [mantener, setMantener] = useState([])
+  const [excluidos, setExcluidos] = useState([])
   const [aplicando, setAplicando] = useState(false)
 
   function descartar() {
-    setArchivo(null); setFilas(null); setPlan(null); setErrores([]); setMantener([])
+    setArchivo(null); setFilas(null); setPlan(null); setErrores([]); setMantener([]); setExcluidos([])
     if (input.current) input.current.value = ''
   }
 
@@ -85,16 +86,24 @@ function CargarExcel({ sesion, resumen, onListo, onError }) {
     setArchivo(f.name)
     setLeyendo(true)
     try {
-      const { readSheet } = await import('read-excel-file/browser')
-      const rows = await readSheet(f)
+      const esPdf = /\.pdf$/i.test(f.name) || f.type === 'application/pdf'
+      let rows
+      if (esPdf) {
+        const { leerPdf } = await import('../lib/padronPdf')
+        rows = await leerPdf(f)
+      } else {
+        const { readSheet } = await import('read-excel-file/browser')
+        rows = await readSheet(f)
+      }
       const r = leerPadron(rows)
       if (r.errores.length) return setErrores(r.errores)
+      setExcluidos(r.excluidos)
       const datos = r.filas.map(({ nro, dni, nombre, apellido, email, celular }) => ({ nro, dni, nombre, apellido, email, celular }))
       setFilas(datos)
       setPlan(await api.adminPrevisualizar(sesion.token, datos))
     } catch (err) {
       if (err.codigo || err.code) onError(err)
-      else setErrores(['No pudimos leer el archivo. Tiene que ser un Excel (.xlsx) con las columnas Socio, Nombre, Teléfono, Email y Dni.'])
+      else setErrores(['No pudimos leer el archivo. Tiene que ser el PDF del listado de socios de AF Sistemas o un Excel (.xlsx) con las columnas Socio, Nombre, Teléfono, Email y Dni.'])
     } finally {
       setLeyendo(false)
     }
@@ -105,7 +114,7 @@ function CargarExcel({ sesion, resumen, onListo, onError }) {
     try {
       const r = await api.adminAplicar(sesion.token, filas, mantener, archivo)
       descartar()
-      onListo(`Padrón actualizado: ${r.filas} socios en el Excel · ${r.altas} altas · ${r.bajas} bajas · ${r.cambios} con datos actualizados${r.mantenidos ? ` · ${r.mantenidos} mantenidos a mano` : ''}${r.mails_al_dia ? ` · ${r.mails_al_dia} ${r.mails_al_dia === 1 ? 'mail corregido ya figura' : 'mails corregidos ya figuran'} en AF` : ''}.`)
+      onListo(`Padrón actualizado: ${r.filas} socios con carnet · ${r.altas} altas · ${r.bajas} bajas · ${r.cambios} con datos actualizados${r.mantenidos ? ` · ${r.mantenidos} mantenidos a mano` : ''}${r.mails_al_dia ? ` · ${r.mails_al_dia} ${r.mails_al_dia === 1 ? 'mail corregido ya figura' : 'mails corregidos ya figuran'} en AF` : ''}.`)
     } catch (err) {
       onError(err)
     } finally {
@@ -118,35 +127,41 @@ function CargarExcel({ sesion, resumen, onListo, onError }) {
   const bajasPadron = plan?.bajas.filter((b) => !b.manual) ?? []
 
   return (
-    <Tarjeta titulo="Cargar el Excel semanal"
-      sub="El Excel de AF Sistemas con todos los socios con carnet de tenis vigente. Antes de guardar te mostramos qué cambia.">
+    <Tarjeta titulo="Cargar el padrón semanal"
+      sub="El PDF (o Excel) de AF Sistemas con todos los socios con carnet de tenis. Antes de guardar te mostramos qué cambia.">
       <div className="flex flex-wrap items-center gap-3">
         <label className={`${BOTON} inline-flex cursor-pointer items-center`}>
-          Elegir Excel
-          <input ref={input} type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+          Elegir PDF o Excel
+          <input ref={input} type="file" accept=".pdf,application/pdf,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             onChange={elegir} className="sr-only" />
         </label>
         {archivo && <span className="text-[14px] text-gris">{archivo}</span>}
       </div>
 
-      {leyendo && <Cargando texto="Leyendo el Excel…" />}
+      {leyendo && <Cargando texto="Leyendo el archivo…" />}
       {errores.map((e) => <Aviso key={e} tipo="error">{e}</Aviso>)}
 
       {plan && (
         <div className="flex flex-col gap-3">
           {sospechoso && (
             <Aviso tipo="alerta">
-              <strong className="block">¿Es el Excel completo?</strong>
+              <strong className="block">¿Es el listado completo?</strong>
               Trae {plan.filas} socios y hoy hay {resumen.con_carnet} con carnet. Si aplicás esta carga, {plan.bajas.length} socios pierden el carnet.
             </Aviso>
           )}
 
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-            <Numero valor={plan.filas} texto="socios en el Excel" />
+            <Numero valor={plan.filas} texto="socios con carnet" />
             <Numero valor={plan.altas.length} texto="altas" color="text-verde" />
             <Numero valor={plan.bajas.length} texto="bajas" color={plan.bajas.length ? 'text-error' : undefined} />
             <Numero valor={plan.cambios.length} texto="con datos nuevos" />
           </div>
+
+          {excluidos.length > 0 && (
+            <Lista titulo={`No se cargan: vencidos o en 0 en AF (${excluidos.length})`}>
+              {excluidos.map((x) => <Item key={x.nro} nombre={x.nombre} nro={x.nro} nota={x.motivo} />)}
+            </Lista>
+          )}
 
           {plan.altas.length > 0 && (
             <Lista titulo={`Altas (${plan.altas.length})`}>
@@ -156,8 +171,8 @@ function CargarExcel({ sesion, resumen, onListo, onError }) {
 
           {bajasManuales.length > 0 && (
             <div className="flex flex-col gap-2 rounded-xl border border-[#f2d3a6] bg-[#fff4e5] p-3">
-              <span className="text-[15px] font-bold text-[#4a3a22]">Altas manuales que no vienen en el Excel ({bajasManuales.length})</span>
-              <span className="text-[14px] text-[#4a3a22]">Se dan de baja. Tildá a quien quieras mantener (por ejemplo, si pagó después de exportar el Excel).</span>
+              <span className="text-[15px] font-bold text-[#4a3a22]">Altas manuales que no vienen en el listado ({bajasManuales.length})</span>
+              <span className="text-[14px] text-[#4a3a22]">Se dan de baja. Tildá a quien quieras mantener (por ejemplo, si pagó después de que se sacó el listado).</span>
               {bajasManuales.map((b) => (
                 <label key={b.nro} className="flex min-h-11 cursor-pointer items-center gap-3 text-[15px]">
                   <input type="checkbox" className="size-5 accent-verde" checked={mantener.includes(b.nro)}
@@ -169,7 +184,7 @@ function CargarExcel({ sesion, resumen, onListo, onError }) {
           )}
 
           {bajasPadron.length > 0 && (
-            <Lista titulo={`Bajas: ya no vienen en el Excel (${bajasPadron.length})`}>
+            <Lista titulo={`Bajas: ya no vienen en el listado (${bajasPadron.length})`}>
               {bajasPadron.map((b) => (
                 <Item key={b.nro} nombre={b.nombre} nro={b.nro}
                   nota={b.reservas ? `${b.reservas} ${b.reservas === 1 ? 'reserva activa' : 'reservas activas'} (se mantienen)` : null} />
@@ -178,7 +193,7 @@ function CargarExcel({ sesion, resumen, onListo, onError }) {
           )}
 
           {plan.confirmados.length > 0 && (
-            <Lista titulo={`Altas manuales que llegan en el Excel (${plan.confirmados.length})`}>
+            <Lista titulo={`Altas manuales que llegan en el listado (${plan.confirmados.length})`}>
               {plan.confirmados.map((c) => <Item key={c.nro} nombre={c.nombre} nro={c.nro} nota="Queda cargado como uno más" />)}
             </Lista>
           )}
@@ -272,7 +287,7 @@ function AltaManual({ sesion, onListo, onError }) {
 
   return (
     <Tarjeta titulo="Alta manual"
-      sub="Para quien pagó el carnet en la semana: puede reservar en el momento. Cuando llegue en el Excel queda cargado como uno más; si no llega, la próxima carga lo da de baja.">
+      sub="Para quien pagó el carnet en la semana: puede reservar en el momento. Cuando llegue en el listado queda cargado como uno más; si no llega, la próxima carga lo da de baja.">
       <form onSubmit={guardar} className="grid gap-3 sm:grid-cols-2">
         <Entrada id="alta-nro" label="Número de socio" inputMode="numeric" required {...campo('nro')} />
         <Entrada id="alta-dni" label="DNI (sin puntos)" inputMode="numeric" required {...campo('dni')} />
@@ -328,7 +343,7 @@ function BuscarSocio({ sesion, refrescar, onListo, onError }) {
     if (!window.confirm(`${s.nombre} ${s.apellido} · Socio ${s.nro}\n\n¿Volver a darle el carnet de tenis? Va a poder reservar en el momento.`)) return
     try {
       const r = await api.adminReactivar(sesion.token, s.nro)
-      onListo(`${r.nombre} (socio ${r.nro}) volvió a tener el carnet vigente. Queda como alta manual hasta que llegue en el Excel.`)
+      onListo(`${r.nombre} (socio ${r.nro}) volvió a tener el carnet vigente. Queda como alta manual hasta que llegue en el listado.`)
     } catch (err) { onError(err) }
   }
 
@@ -340,7 +355,7 @@ function BuscarSocio({ sesion, refrescar, onListo, onError }) {
         className="h-11 rounded-xl border-[1.5px] border-borde bg-white px-3 text-base outline-none focus:border-verde" />
       {res === null ? <Cargando /> : (
         <>
-          {sinBusqueda && <span className="text-[13px] font-bold text-gris">Altas manuales que todavía no llegaron en el Excel</span>}
+          {sinBusqueda && <span className="text-[13px] font-bold text-gris">Altas manuales que todavía no llegaron en el listado</span>}
           {res.length === 0 && (
             <p className="text-[15px] text-gris">{sinBusqueda ? 'No hay altas manuales pendientes.' : 'No encontramos socios con esa búsqueda.'}</p>
           )}
@@ -415,7 +430,7 @@ function MailsCorregidos({ sesion, refrescar, onError }) {
 
   return (
     <Tarjeta titulo={`Mails corregidos por los socios${lista?.length ? ` (${lista.length})` : ''}`}
-      sub="Socios que cargaron o cambiaron su mail en la app. Pasale la lista a quien actualiza AF Sistemas: cuando el Excel semanal ya traiga el mail nuevo, el socio sale de la lista solo.">
+      sub="Socios que cargaron o cambiaron su mail en la app. Pasale la lista a quien actualiza AF Sistemas: cuando el listado semanal ya traiga el mail nuevo, el socio sale de la lista solo.">
       {lista === null ? <Cargando /> : lista.length === 0 ? (
         <p className="text-[15px] text-gris">Por ahora ningún socio corrigió su mail.</p>
       ) : (

@@ -93,7 +93,9 @@ Ver cómo van: `select id, tipo, socio_nro, estado, intentos, error, creado from
 
 El usuario `admin` entra en `/admin` con usuario y clave y ve solo la sección Socios:
 
-- **Excel semanal:** se sube el Excel de AF Sistemas (columnas Socio, Nombre, Teléfono, Email, Dni). Se lee y limpia
+- **Padrón semanal:** se sube el PDF "Listado de Socios por Conceptos" de AF Sistemas (o un Excel con columnas
+  Socio, Nombre, Teléfono, Email, Dni). Del PDF se toman Socio, Nombre, Teléfono, E-Mail y Nrodoc; quedan afuera los
+  que tienen "Hasta" vencido o "Cantidad" 0 (se listan en la vista previa). Se lee y limpia
   en el navegador (nombres, mails cortados `@gm…`, `@yahoo.com.`, `@fibertel`…), se muestra qué cambia y se aplica.
   El Excel trae a **todos** los activos: quien no está pierde el carnet (sus reservas ya hechas se mantienen).
 - **Alta manual:** para quien paga el carnet en la semana; reserva en el momento. Si llega en el Excel siguiente queda
