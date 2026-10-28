@@ -1,6 +1,5 @@
 -- El buscador de compañeros y "Jugaste con" no muestran:
 --  * al propio socio (tampoco otra ficha con el mismo DNI)
---  * a quien ya tiene el máximo de reservas activas
 create or replace function public.buscar_socios(p_token uuid, p_q text, p_inicio timestamptz default null, p_fin timestamptz default null) returns json
 language plpgsql stable security definer set search_path = public as $$
 declare
@@ -21,7 +20,6 @@ begin
       from public.socios o
       where o.nro <> s.nro
         and o.dni <> s.dni
-        and coalesce(public._impide_reservar(o.nro, p_inicio, p_fin), '') <> 'limite'
         and o.activo
         and o.rol = 'socio'
         and (o.nro like (q || '%')
@@ -56,7 +54,6 @@ begin
       join public.socios o               on o.nro = otro.socio_nro and o.activo and o.rol = 'socio'
       where yo.socio_nro = s.nro
         and o.dni <> s.dni
-        and coalesce(public._impide_reservar(o.nro, p_inicio, p_fin), '') <> 'limite'
         and r.inicio > now() - interval '180 days'
       group by o.nro
       order by count(*) desc, max(r.inicio) desc

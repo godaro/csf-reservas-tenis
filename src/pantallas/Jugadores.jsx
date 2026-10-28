@@ -141,7 +141,7 @@ export default function Jugadores({ sesion, reserva, onJugadores, onConfirmada, 
             })}
           </div>
           {frecuentes.some((f) => f.estado !== 'ok') && (
-            <p className="text-[12px] text-gris">Tachados: tienen otra reserva muy cerca de este horario o el carnet no vigente.</p>
+            <p className="text-[12px] text-gris">Tachados: ya tienen el máximo de reservas, otra reserva muy cerca de este horario o el carnet no vigente.</p>
           )}
         </div>
       )}
