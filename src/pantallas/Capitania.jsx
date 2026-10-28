@@ -102,6 +102,8 @@ export default function Capitania({ sesion, onError }) {
   // Bloque completo bajo el mouse: todas las celdas de ese bloqueo o esa reserva en la misma cancha
   const gruposFoco = grupos.filter((g) => gruposDeFoco.includes(g.clave))
   const enBloqueFoco = (cancha, hora, celda) => {
+    // Bloqueo de la lista bajo el mouse: sus celdas toman el mismo color que al pasar sobre ellas
+    if (celda.estado === 'bloqueada' && celdaResaltada(cancha, hora)) return true
     if (!foco || foco.cancha !== cancha || celda.estado !== foco.estado) return false
     if (foco.estado === 'bloqueada') return gruposFoco.some((g) => cubre(g, cancha, hora))
     if (foco.estado === 'reservada') return celda.reserva_id === foco.reserva_id
@@ -247,7 +249,7 @@ export default function Capitania({ sesion, onError }) {
             ))}
             {grilla.filas.map((f) => (
               <Fila key={f.cancha} fila={f} horas={grilla.horas} onReservada={panelVisible ? cancelarReserva : () => {}}
-                onFoco={setFoco} resaltada={celdaResaltada} enBloque={enBloqueFoco} />
+                onFoco={setFoco} enBloque={enBloqueFoco} />
             ))}
           </div>
         ) : (
@@ -496,22 +498,21 @@ function rangos(ns) {
   return partes.join(', ')
 }
 
-function Fila({ fila, horas, onReservada, onFoco, resaltada, enBloque }) {
+function Fila({ fila, horas, onReservada, onFoco, enBloque }) {
   return (
     <>
       <span className="flex h-8 items-center text-[13px] font-bold">Cancha {fila.cancha}</span>
       {fila.celdas.map((c, i) => {
         const info = { cancha: fila.cancha, hora: horas[i], estado: c.estado, detalle: c.detalle, reserva_id: c.reserva_id }
-        const marca = c.estado !== 'bloqueada' && resaltada(fila.cancha, horas[i]) ? ' ring-2 ring-dorado ring-offset-1' : ''
         const color = enBloque(fila.cancha, horas[i], c) ? `${COLOR_FOCO[c.estado]} cursor-pointer` : COLOR[c.estado]
         return c.estado === 'reservada' ? (
           <button key={i} aria-label={`Cancha ${fila.cancha}, ${horas[i]}: ${c.detalle}`}
             onMouseEnter={() => onFoco(info)} onFocus={() => onFoco(info)}
             onClick={() => onReservada(c, fila.cancha, horas[i])}
-            className={`h-8 rounded border transition-colors ${color}${marca}`} />
+            className={`h-8 rounded border transition-colors ${color}`} />
         ) : (
           <span key={i} onMouseEnter={() => onFoco(info)}
-            className={`h-8 rounded border transition-colors ${color}${marca}`} />
+            className={`h-8 rounded border transition-colors ${color}`} />
         )
       })}
     </>
