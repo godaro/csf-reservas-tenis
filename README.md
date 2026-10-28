@@ -10,14 +10,14 @@ Capitanía de Tenis administre bloqueos. Reemplaza a Simple Solution.
 - 15 canchas, de 08:00 a 22:00, turnos que arrancan cada media hora.
 - **Single 60 min · Dobles 90 min.**
 - Los turnos del día D se habilitan a las **22:00 de D-2** (ej.: el domingo se habilita el viernes 22:00).
-- **Una sola reserva activa por socio**, como titular o como jugador.
+- **Hasta 2 reservas activas por socio**, como titular o como jugador, con **al menos 1 hora libre** entre una y otra.
 - Todos los jugadores tienen que tener **carnet de tenis vigente**.
 - Nunca puede haber dos reservas superpuestas en la misma cancha, aunque dos socios reserven en el mismo segundo.
 - El titular puede **cancelar en cualquier momento**. La Capitanía también.
 - La Capitanía tiene su propio panel en `/capitania` (solo cuentas con rol `capitania`): ve la grilla del día, bloquea franjas (puntuales o semanales) y puede cancelar reservas. Si un bloqueo pisa reservas, el panel las lista y pide confirmar: al confirmar se cancelan y los socios lo ven en "Mis reservas" con el motivo.
 - Login de socios: número de socio + DNI. Capitanía: usuario + clave. 5 intentos fallidos bloquean 15 minutos.
 
-Horarios y ventana de habilitación se cambian en la tabla `config` (Supabase → Table Editor).
+Horarios, ventana de habilitación, máximo de reservas (`max_reservas`) y separación mínima en minutos (`separacion_min`) se cambian en la tabla `config` (Supabase → Table Editor).
 
 ## Puesta en marcha
 
@@ -31,8 +31,9 @@ Horarios y ventana de habilitación se cambian en la tabla `config` (Supabase �
 7. Pegar y correr `supabase/migrations/20261027020000_capitania_usuario_clave.sql` (Capitanía con usuario y clave).
 8. Pegar y correr `supabase/migrations/20261027030000_avisos_solo_mail_valido.sql` (avisos solo a mails válidos).
 9. Pegar y correr `supabase/migrations/20261027040000_mail_del_socio.sql` (el socio carga su mail).
-10. Crear el usuario de la Capitanía: `select crear_usuario_capitania('capitania', 'Capitanía de Tenis', 'una-clave-temporal');`
-11. (Opcional, para probar) pegar y correr `supabase/seed_demo.sql`: crea socios ficticios.
+10. Pegar y correr `supabase/migrations/20261027050000_dos_reservas.sql` (hasta 2 reservas, separadas 1 hora).
+11. Crear el usuario de la Capitanía: `select crear_usuario_capitania('capitania', 'Capitanía de Tenis', 'una-clave-temporal');`
+12. (Opcional, para probar) pegar y correr `supabase/seed_demo.sql`: crea socios ficticios.
 
 Socios de prueba (número / DNI):
 

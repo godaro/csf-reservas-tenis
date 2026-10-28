@@ -16,6 +16,7 @@ async function rpc(fn, params) {
   if (error) {
     const e = new Error(error.message || 'Algo salió mal. Probá de nuevo.')
     e.codigo = error.hint || null // 'SESION', 'OCUPADA'
+    e.code = error.code || null
     throw e
   }
   return data
@@ -29,8 +30,14 @@ export const api = {
   dias: (token) => rpc('dias', { p_token: token }),
   disponibilidad: (token, fecha, tipo) =>
     rpc('disponibilidad', { p_token: token, p_fecha: fecha, p_tipo: tipo }),
-  buscarSocios: (token, q) => rpc('buscar_socios', { p_token: token, p_q: q }),
-  frecuentes: (token) => rpc('companeros_frecuentes', { p_token: token }),
+  // Con el horario del partido, avisa qué compañeros ya no pueden (máximo de reservas o muy cerca).
+  // Si la base todavía no tiene la versión nueva, se usa la anterior (sin horario).
+  buscarSocios: (token, q, inicio, fin) =>
+    rpc('buscar_socios', { p_token: token, p_q: q, p_inicio: inicio, p_fin: fin })
+      .catch((e) => (e.code === 'PGRST202' ? rpc('buscar_socios', { p_token: token, p_q: q }) : Promise.reject(e))),
+  frecuentes: (token, inicio, fin) =>
+    rpc('companeros_frecuentes', { p_token: token, p_inicio: inicio, p_fin: fin })
+      .catch((e) => (e.code === 'PGRST202' ? rpc('companeros_frecuentes', { p_token: token }) : Promise.reject(e))),
   reservar: (token, cancha, inicio, tipo, jugadores) =>
     rpc('reservar', {
       p_token: token,

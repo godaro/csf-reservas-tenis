@@ -45,9 +45,19 @@ export default function Agenda({ sesion, seleccion, setSeleccion, onElegirHorari
 
       {bloqueadoPorReserva && (
         <Aviso tipo="alerta">
-          <strong className="block">Ya tenés una reserva activa</strong>
-          Para reservar otra, primero cancelala.{' '}
-          <button onClick={onVerMis} className="min-h-11 font-bold underline">Ver mi reserva</button>
+          <strong className="block">
+            {disp.max_reservas ? `Ya tenés ${disp.max_reservas} reservas activas, el máximo` : 'Ya tenés una reserva activa'}
+          </strong>
+          Para reservar otra, primero cancelá una.{' '}
+          <button onClick={onVerMis} className="min-h-11 font-bold underline">Ver mis reservas</button>
+        </Aviso>
+      )}
+      {!bloqueadoPorReserva && disp?.mis_reservas_activas > 0 && (
+        <Aviso>
+          Tenés {disp.mis_reservas_activas === 1 ? '1 reserva activa' : `${disp.mis_reservas_activas} reservas activas`}: podés hacer{' '}
+          {disp.max_reservas - disp.mis_reservas_activas === 1 ? '1 más' : `${disp.max_reservas - disp.mis_reservas_activas} más`}, con al menos{' '}
+          {disp.separacion_min % 60 === 0 ? `${disp.separacion_min / 60} hora${disp.separacion_min > 60 ? 's' : ''}` : `${disp.separacion_min} minutos`} de diferencia.
+          Los horarios muy cerca de tu reserva aparecen en gris.
         </Aviso>
       )}
 
@@ -124,7 +134,8 @@ export default function Agenda({ sesion, seleccion, setSeleccion, onElegirHorari
           <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
             {disp.slots.map((s) => {
               const n = s.libres.length
-              const deshabilitado = n === 0 || bloqueadoPorReserva
+              const cerca = !!s.cerca_de_otra
+              const deshabilitado = n === 0 || bloqueadoPorReserva || cerca
               return (
                 <button
                   key={s.hora}
@@ -138,7 +149,7 @@ export default function Agenda({ sesion, seleccion, setSeleccion, onElegirHorari
                 >
                   <span className="text-[17px] font-bold">{s.hora}</span>
                   <span className={`text-xs font-bold ${deshabilitado ? 'text-gris' : 'text-verde'}`}>
-                    {n === 0 ? 'Completo' : n === 1 ? '1 libre' : `${n} libres`}
+                    {cerca && !bloqueadoPorReserva ? 'Muy cerca' : n === 0 ? 'Completo' : n === 1 ? '1 libre' : `${n} libres`}
                   </span>
                 </button>
               )

@@ -115,7 +115,7 @@ export default function MisReservas({ sesion, onReservar, onError }) {
       <MiMail sesion={sesion} modo="ficha" onError={onError} />
 
       <p className="text-[13px] leading-snug text-gris">
-        Podés tener una sola reserva activa, ya sea como titular o como jugador invitado por otro socio.
+        Podés tener hasta 2 reservas activas, como titular o como jugador invitado, con al menos 1 hora entre una y otra.
       </p>
     </div>
   )

@@ -5,7 +5,8 @@ import { Aviso, BotonPrincipal, Campo, Cargando, Titulo, Volver } from '../compo
 
 const NOTAS = {
   ok: 'Carnet de tenis vigente',
-  con_reserva: 'Ya tiene una reserva activa',
+  con_reserva: 'Ya tiene el máximo de reservas',
+  muy_cerca: 'Tiene otra reserva muy cerca de este horario',
   sin_carnet: 'Sin carnet de tenis vigente',
 }
 
@@ -29,7 +30,7 @@ export default function Jugadores({ sesion, reserva, onJugadores, onConfirmada, 
   // Compañeros frecuentes (si falla, simplemente no se muestran)
   const [frecuentes, setFrecuentes] = useState([])
   useEffect(() => {
-    api.frecuentes(sesion.token).then(setFrecuentes).catch(() => setFrecuentes([]))
+    api.frecuentes(sesion.token, slot.inicio, fin).then(setFrecuentes).catch(() => setFrecuentes([]))
   }, [sesion.token])
 
   // Búsqueda con una pequeña espera para no consultar en cada tecla
@@ -38,7 +39,7 @@ export default function Jugadores({ sesion, reserva, onJugadores, onConfirmada, 
     if (texto.length < 2) { setResultados([]); return }
     setBuscando(true)
     const t = setTimeout(() => {
-      api.buscarSocios(sesion.token, texto)
+      api.buscarSocios(sesion.token, texto, slot.inicio, fin)
         .then(setResultados)
         .catch((e) => (e.codigo === 'SESION' ? onError(e) : setError({ texto: e.message })))
         .finally(() => setBuscando(false))
@@ -141,7 +142,7 @@ export default function Jugadores({ sesion, reserva, onJugadores, onConfirmada, 
             })}
           </div>
           {frecuentes.some((f) => f.estado !== 'ok') && (
-            <p className="text-[12px] text-gris">Tachados: ya tienen una reserva activa o el carnet no está vigente.</p>
+            <p className="text-[12px] text-gris">Tachados: ya tienen el máximo de reservas, otra reserva muy cerca de este horario o el carnet no vigente.</p>
           )}
         </div>
       )}
