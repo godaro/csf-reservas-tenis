@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { api, configurado, ES_ADMIN, ES_PANEL, ROL_RUTA, guardarSesion, leerSesion } from './lib/api'
 import Login from './pantallas/Login'
 import Agenda from './pantallas/Agenda'
@@ -11,6 +11,7 @@ import Admin from './pantallas/Admin'
 import { Aviso } from './componentes/ui'
 import { JUGADORES_EXTRA } from './lib/fechas'
 import MiMail from './componentes/MiMail'
+import { evento, vista } from './lib/analitica'
 
 export default function App() {
   const [sesion, setSesion] = useState(leerSesion)
@@ -22,7 +23,21 @@ export default function App() {
 
   const ir = (p) => { setAviso(''); setPantalla(p); window.scrollTo(0, 0) }
 
+  // Analytics: una "página" por pantalla (sin datos personales)
+  const rolSesion = sesion && sesion.rol === ROL_RUTA ? sesion.rol : null
+  useEffect(() => {
+    if (ES_ADMIN) vista(rolSesion ? '/admin' : '/admin/ingreso', 'Administración')
+    else if (ES_PANEL) vista(rolSesion ? '/capitania' : '/capitania/ingreso', 'Panel de Capitanía')
+    else if (!rolSesion) vista('/ingreso', 'Ingreso')
+    else vista(...({
+      agenda: ['/reservar', 'Reservar'], cancha: ['/reservar/cancha', 'Elegir cancha'],
+      jugadores: ['/reservar/jugadores', 'Compañeros'], ok: ['/reservar/confirmada', 'Reserva confirmada'],
+      mis: ['/mis-reservas', 'Mis reservas'],
+    }[pantalla] ?? ['/reservar', 'Reservar']))
+  }, [pantalla, rolSesion])
+
   function ingresar(s) {
+    evento('login', { method: s.rol === 'socio' ? 'socio_dni' : 'usuario_clave' })
     guardarSesion(s)
     setSesion(s)
     ir('agenda')
@@ -120,7 +135,7 @@ export default function App() {
         <Jugadores sesion={sesion} reserva={reserva} onError={onError}
           onJugadores={(jugadores) => setReserva((r) => ({ ...r, jugadores }))}
           onVolver={() => ir('cancha')} onOcupada={() => ir('agenda')}
-          onConfirmada={(r) => { setResumen(r); setReserva(null); ir('ok') }} />
+          onConfirmada={(r) => { evento('reserva_confirmada', { tipo_partido: r.tipo, cancha: r.cancha }); setResumen(r); setReserva(null); ir('ok') }} />
       )}
       {pantalla === 'ok' && resumen && <Confirmada resumen={resumen} onVerMis={() => ir('mis')} />}
       {pantalla === 'mis' && <MisReservas sesion={sesion} onError={onError} onReservar={() => ir('agenda')} />}

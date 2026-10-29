@@ -1,5 +1,6 @@
 import { fechaCorta, fechaLarga } from '../lib/fechas'
 import { BotonPrincipal } from '../componentes/ui'
+import { evento } from '../lib/analitica'
 
 // Mensaje listo para que el socio lo mande él mismo (sin costo para el Club)
 function mensajeWhatsApp(r) {
@@ -43,6 +44,7 @@ export default function Confirmada({ resumen, onVerMis }) {
       </dl>
       <a
         href={linkWhatsApp}
+        onClick={() => evento('compartir_whatsapp')}
         target="_blank"
         rel="noopener noreferrer"
         className="flex h-13 items-center justify-center gap-2 rounded-xl border-[1.5px] border-[#1a7f45] bg-white text-[17px] font-bold text-[#1a7f45] transition hover:bg-[#eaf6ee]"

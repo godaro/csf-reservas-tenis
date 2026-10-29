@@ -4,6 +4,7 @@ import { fechaCorta } from '../lib/fechas'
 import { Aviso, BotonPrincipal, Cargando, Titulo } from '../componentes/ui'
 import InstalarApp from '../componentes/InstalarApp'
 import MiMail from '../componentes/MiMail'
+import { evento } from '../lib/analitica'
 
 // Avisos de cancelación que el socio ya vio (se guardan en el dispositivo)
 const CLAVE_VISTAS = 'csf-tenis-canceladas-vistas'
@@ -38,6 +39,7 @@ export default function MisReservas({ sesion, onReservar, onError }) {
     setError('')
     try {
       await api.cancelar(sesion.token, r.id)
+      evento('reserva_cancelada', { tipo_partido: r.tipo })
       cargar()
     } catch (e) {
       if (e.codigo === 'SESION') onError(e)
