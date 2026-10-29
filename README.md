@@ -76,7 +76,7 @@ Conectar el repo en Netlify (como Encontralo) y cargar en
 
 ## Analytics (Google Analytics 4)
 
-Opcional: con la variable `VITE_GA_ID` (ID de medición `G-…`) en Netlify se activa GA4. Cada pantalla cuenta como una
+Activo en la versión publicada con el flujo `G-HR7DWG18N6` (se puede cambiar con la variable `VITE_GA_ID` en Netlify). Cada pantalla cuenta como una
 página virtual (`/ingreso`, `/reservar`, `/reservar/cancha`, `/reservar/jugadores`, `/reservar/confirmada`,
 `/mis-reservas`, `/capitania`, `/admin`) y se registran los eventos `login`, `reserva_confirmada`, `reserva_cancelada` y
 `compartir_whatsapp`. Nunca se envían datos personales (número de socio, nombres, DNI ni mails).

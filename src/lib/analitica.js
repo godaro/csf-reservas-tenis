@@ -1,8 +1,9 @@
-// Google Analytics 4 (solo si está configurado VITE_GA_ID en Netlify).
+// Google Analytics 4. El ID se puede cambiar con la variable VITE_GA_ID en Netlify.
 // Nunca se manda información personal: ni número de socio, ni nombres, ni DNI.
 // La app no cambia de dirección entre pantallas, así que cada pantalla se registra
 // como una "página" virtual (/reservar, /mis-reservas, /capitania, …).
-const ID = import.meta.env.VITE_GA_ID
+// Flujo "Reservas de Tenis". Solo en la versión publicada (en desarrollo no se mide nada).
+const ID = import.meta.env.VITE_GA_ID || (import.meta.env.PROD ? 'G-HR7DWG18N6' : null)
 
 let iniciado = false
 function iniciar() {
