@@ -12,6 +12,8 @@ Capitanía de Tenis administre bloqueos. Reemplaza a Simple Solution.
 - Los turnos del día D se habilitan a las **22:00 de D-2** (ej.: el domingo se habilita el viernes 22:00).
 - **Hasta 2 reservas activas por socio**, como titular o como jugador, con **al menos 3 horas libres** entre una y otra (`config.separacion_min` = 180).
 - Todos los jugadores tienen que tener **carnet de tenis vigente**.
+- **Invitado no socio:** uno por partido, cargado por el socio al reservar (nombre, apellido y DNI). Solo miércoles y viernes
+  de 8 a 22 y domingos desde las 12 (`config.invitados_franjas`). Paga el día en la Capitanía, que lo marca como pagado en el panel.
 - Nunca puede haber dos reservas superpuestas en la misma cancha, aunque dos socios reserven en el mismo segundo.
 - El titular puede **cancelar en cualquier momento**. La Capitanía también.
 - Desde el panel, la Capitanía toca una reserva y puede **cambiarla de cancha** (mismo horario) o **reemplazar a un jugador**
@@ -41,8 +43,9 @@ Horarios, ventana de habilitación, máximo de reservas (`max_reservas`) y separ
 15. Pegar y correr `supabase/migrations/20261028020000_admin_reactivar.sql` (botón "Volver a dar de alta").
 16. Volver a desplegar la Edge Function `enviar-avisos` con el `index.ts` nuevo y **después** pegar y correr
     `supabase/migrations/20261028030000_capitania_editar_reserva.sql` (la Capitanía modifica reservas).
-17. Crear el usuario de Administración: `select crear_usuario_admin('admin', 'Administración', 'una-clave-temporal');`
-18. (Opcional, para probar) pegar y correr `supabase/seed_demo.sql`: crea socios ficticios.
+17. Pegar y correr `supabase/migrations/20261029000000_invitados.sql` (invitados no socios).
+18. Crear el usuario de Administración: `select crear_usuario_admin('admin', 'Administración', 'una-clave-temporal');`
+19. (Opcional, para probar) pegar y correr `supabase/seed_demo.sql`: crea socios ficticios.
 
 Socios de prueba (número / DNI):
 

@@ -38,14 +38,17 @@ export const api = {
   frecuentes: (token, inicio, fin) =>
     rpc('companeros_frecuentes', { p_token: token, p_inicio: inicio, p_fin: fin })
       .catch((e) => (e.code === 'PGRST202' ? rpc('companeros_frecuentes', { p_token: token }) : Promise.reject(e))),
-  reservar: (token, cancha, inicio, tipo, jugadores) =>
+  reservar: (token, cancha, inicio, tipo, jugadores, invitado = null) =>
     rpc('reservar', {
       p_token: token,
       p_cancha: cancha,
       p_inicio: inicio,
       p_tipo: tipo,
       p_jugadores: jugadores,
+      ...(invitado ? { p_invitado: invitado } : {}),
     }),
+  invitadosReglas: (token, inicio, fin) => rpc('invitados_reglas', { p_token: token, p_inicio: inicio, p_fin: fin }),
+  capitaniaInvitadoPago: (token, id, pagado) => rpc('capitania_invitado_pago', { p_token: token, p_id: id, p_pagado: pagado }),
   misReservas: (token) => rpc('mis_reservas', { p_token: token }),
   miPerfil: (token) => rpc('mi_perfil', { p_token: token }),
   actualizarMiEmail: (token, email) => rpc('actualizar_mi_email', { p_token: token, p_email: email }),

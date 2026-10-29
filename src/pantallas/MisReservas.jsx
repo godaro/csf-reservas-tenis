@@ -66,7 +66,7 @@ export default function MisReservas({ sesion, onReservar, onError }) {
       )}
 
       {activas.map((r) => {
-        const otros = r.jugadores.filter((j) => j.nro !== sesion.nro).map((j) => j.nombre)
+        const otros = [...r.jugadores.filter((j) => j.nro !== sesion.nro).map((j) => j.nombre), ...(r.invitado ? [`${r.invitado.nombre} (invitado)`] : [])]
         const titular = r.jugadores.find((j) => j.titular)
         return (
           <article key={r.id} className="flex flex-col gap-3 rounded-2xl border border-borde bg-white p-4">

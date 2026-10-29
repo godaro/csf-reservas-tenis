@@ -42,6 +42,11 @@ export default function Confirmada({ resumen, onVerMis }) {
           </div>
         ))}
       </dl>
+      {resumen.conInvitado && (
+        <p className="rounded-xl bg-[#fff4e5] px-4 py-3 text-[15px] leading-snug text-[#4a3a22]">
+          <strong>Tu invitado paga el día en la Capitanía de Tenis</strong> antes de entrar a la cancha.
+        </p>
+      )}
       <a
         href={linkWhatsApp}
         onClick={() => evento('compartir_whatsapp')}

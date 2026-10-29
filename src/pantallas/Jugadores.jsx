@@ -26,6 +26,31 @@ export default function Jugadores({ sesion, reserva, onJugadores, onConfirmada, 
   // Si te ganan la cancha: otras canchas libres en el mismo horario (null = no aplica)
   const [alternativas, setAlternativas] = useState(null)
 
+  // Invitado no socio: uno por partido, solo en las franjas que define el Club
+  const [reglas, setReglas] = useState(null) // { permitido, texto }
+  const [formInv, setFormInv] = useState(null) // { nombre, apellido, dni } mientras se carga
+  const invitado = elegidos.find((e) => e.invitado)
+  useEffect(() => {
+    api.invitadosReglas(sesion.token, slot.inicio, fin).then((r) => {
+      setReglas(r)
+      // Si cambió el horario y ahí no se admiten invitados, se saca el que estaba
+      if (!r.permitido && elegidos.some((e) => e.invitado)) setElegidos(elegidos.filter((e) => !e.invitado))
+    }).catch(() => setReglas(null))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sesion.token, slot.inicio])
+
+  function agregarInvitado(e) {
+    e.preventDefault()
+    const nombre = formInv.nombre.trim()
+    const apellido = formInv.apellido.trim()
+    const dni = formInv.dni.replace(/\D/g, '')
+    if (!nombre || !apellido) return setError({ texto: 'Completá nombre y apellido del invitado.' })
+    if (dni.length < 6) return setError({ texto: 'El DNI del invitado no es válido.' })
+    setError(null)
+    setElegidos([...elegidos, { nro: 'invitado', invitado: true, nombre: `${nombre} ${apellido}`, datos: { nombre, apellido, dni } }])
+    setFormInv(null)
+  }
+
   // Compañeros frecuentes (si falla, simplemente no se muestran)
   const [frecuentes, setFrecuentes] = useState([])
   useEffect(() => {
@@ -65,11 +90,13 @@ export default function Jugadores({ sesion, reserva, onJugadores, onConfirmada, 
     setCanchaActual(n)
     setEnviando(true)
     try {
-      await api.reservar(sesion.token, n, slot.inicio, tipo, elegidos.map((e) => e.nro))
+      await api.reservar(sesion.token, n, slot.inicio, tipo,
+        elegidos.filter((e) => !e.invitado).map((e) => e.nro), invitado ? invitado.datos : null)
       onConfirmada({
         fecha, cancha: n, tipo,
         rango: `${slot.hora} a ${hora(fin)}`,
-        jugadores: elegidos.map((e) => e.nombre),
+        jugadores: elegidos.map((e) => (e.invitado ? `${e.nombre} (invitado)` : e.nombre)),
+        conInvitado: !!invitado,
       })
     } catch (e) {
       if (e.codigo === 'SESION') return onError(e)
@@ -109,7 +136,7 @@ export default function Jugadores({ sesion, reserva, onJugadores, onConfirmada, 
               aria-label={`Quitar a ${e.nombre}`}
               className="inline-flex min-h-8 items-center gap-1.5 rounded-full bg-verde-claro pl-3 pr-2.5 text-sm font-bold text-verde-oscuro"
             >
-              {e.nombre} <span aria-hidden="true">✕</span>
+              {e.nombre}{e.invitado ? ' (invitado)' : ''} <span aria-hidden="true">✕</span>
             </button>
           ))}
         </div>
@@ -149,6 +176,36 @@ export default function Jugadores({ sesion, reserva, onJugadores, onConfirmada, 
       {!completo && (
         <Campo id="buscar" label="Buscar socio con carnet de tenis" placeholder="Nombre, apellido o número de socio"
           value={q} onChange={(e) => setQ(e.target.value)} autoComplete="off" />
+      )}
+
+      {!completo && !invitado && reglas && (
+        reglas.permitido ? (
+          formInv ? (
+            <form onSubmit={agregarInvitado} className="flex flex-col gap-3 rounded-xl border border-borde bg-white p-3.5">
+              <span className="text-[15px] font-bold">Invitado no socio</span>
+              <div className="grid grid-cols-2 gap-2">
+                <Campo id="inv-nombre" label="Nombre" autoComplete="off" value={formInv.nombre}
+                  onChange={(e) => setFormInv({ ...formInv, nombre: e.target.value })} />
+                <Campo id="inv-apellido" label="Apellido" autoComplete="off" value={formInv.apellido}
+                  onChange={(e) => setFormInv({ ...formInv, apellido: e.target.value })} />
+              </div>
+              <Campo id="inv-dni" label="DNI (sin puntos)" inputMode="numeric" autoComplete="off" value={formInv.dni}
+                onChange={(e) => setFormInv({ ...formInv, dni: e.target.value })} />
+              <p className="text-[13px] leading-snug text-gris">Paga el día en la Capitanía de Tenis antes de jugar. Uno por partido.</p>
+              <div className="flex gap-2">
+                <button className="min-h-11 rounded-xl bg-verde px-4 text-[15px] font-bold text-white hover:bg-verde-oscuro">Sumar invitado</button>
+                <button type="button" onClick={() => setFormInv(null)} className="min-h-11 rounded-xl px-3 text-[15px] font-bold text-gris">Cancelar</button>
+              </div>
+            </form>
+          ) : (
+            <button onClick={() => { setError(null); setFormInv({ nombre: '', apellido: '', dni: '' }) }}
+              className="inline-flex min-h-11 items-center gap-1.5 self-start rounded-full border-[1.5px] border-dashed border-verde px-3.5 text-[15px] font-bold text-verde hover:bg-verde-claro">
+              <span aria-hidden="true">+</span> Sumar invitado no socio
+            </button>
+          )
+        ) : (
+          <p className="text-[13px] leading-snug text-gris">Los invitados no socios solo pueden jugar {reglas.texto}.</p>
+        )
       )}
 
       {buscando && <Cargando texto="Buscando…" />}

@@ -96,6 +96,30 @@ export default function DetalleReserva({ sesion, id, onCerrar, onCambio, onError
               </ul>
             </section>
 
+            {r.invitado && (
+              <section className="flex flex-col gap-2">
+                <span className="text-[13px] font-bold text-gris">Invitado no socio</span>
+                <div className={`flex items-center justify-between gap-3 rounded-xl border px-3 py-2 ${r.invitado.pagado ? 'border-borde' : 'border-[#f2d3a6] bg-[#fff4e5]'}`}>
+                  <span className="flex flex-col">
+                    <span className="text-[15px] font-bold">{r.invitado.nombre}</span>
+                    <span className="text-[13px] text-gris">
+                      DNI {r.invitado.dni} · {r.invitado.veces_mes === 1 ? 'primera vez este mes' : `${r.invitado.veces_mes} veces este mes`}
+                    </span>
+                    <span className={`text-[13px] font-bold ${r.invitado.pagado ? 'text-verde' : 'text-[#8a4b00]'}`}>
+                      {r.invitado.pagado ? 'Pagó el día' : 'A cobrar'}
+                    </span>
+                  </span>
+                  {r.estado === 'activa' && (
+                    <button disabled={trabajando} className={r.invitado.pagado ? BOTON_2 : BOTON}
+                      onClick={() => hacer(() => api.capitaniaInvitadoPago(sesion.token, r.id, !r.invitado.pagado),
+                        r.invitado.pagado ? `${r.invitado.nombre}: se marcó como no pagado.` : `${r.invitado.nombre} pagó el día.`)}>
+                      {r.invitado.pagado ? 'Deshacer' : 'Marcar que pagó'}
+                    </button>
+                  )}
+                </div>
+              </section>
+            )}
+
             {editable && modo?.reemplazar && (
               <Reemplazo sesion={sesion} r={r} sale={modo.reemplazar} trabajando={trabajando} onError={manejar}
                 onCancelar={() => setModo(null)}

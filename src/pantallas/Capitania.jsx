@@ -218,6 +218,7 @@ export default function Capitania({ sesion, onError }) {
         <span className="inline-flex items-center gap-1.5"><span className="size-3.5 rounded border border-borde bg-white" />Libre</span>
         <span className="inline-flex items-center gap-1.5"><span className="size-3.5 rounded bg-[#9ccbae]" />Reservada (tocá para ver o modificar)</span>
         <span className="inline-flex items-center gap-1.5"><span className="size-3.5 rounded bg-azul" />Bloqueada</span>
+        <span className="inline-flex items-center gap-1.5"><span className="size-3.5 rounded bg-[#9ccbae] shadow-[inset_0_-4px_0_#D0A966]" />Con invitado a cobrar</span>
       </div>
 
       <p aria-live="polite" className="-mb-2 min-h-6 truncate text-[14px] text-tinta">
@@ -509,7 +510,7 @@ function Fila({ fila, horas, onReservada, onFoco, enBloque }) {
           <button key={i} aria-label={`Cancha ${fila.cancha}, ${horas[i]}: ${c.detalle}`}
             onMouseEnter={() => onFoco(info)} onFocus={() => onFoco(info)}
             onClick={() => onReservada(c, fila.cancha, horas[i])}
-            className={`h-8 rounded border transition-colors ${color}`} />
+            className={`h-8 rounded border transition-colors ${color}${c.invitado === 'a_cobrar' ? ' shadow-[inset_0_-4px_0_#D0A966]' : ''}`} />
         ) : (
           <span key={i} onMouseEnter={() => onFoco(info)}
             className={`h-8 rounded border transition-colors ${color}`} />
