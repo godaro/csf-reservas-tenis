@@ -9,8 +9,8 @@ const NOTAS = {
   sin_carnet: 'Sin carnet de tenis vigente',
 }
 const BOTON = 'min-h-11 rounded-lg bg-verde px-4 text-sm font-bold text-white hover:bg-verde-oscuro disabled:opacity-60'
-const BOTON_2 = 'min-h-11 rounded-lg border-[1.5px] border-borde bg-white px-3 text-sm font-bold text-tinta hover:border-verde disabled:opacity-60'
-const ENTRADA = 'h-11 rounded-xl border-[1.5px] border-borde bg-white px-3 text-base outline-none focus:border-verde'
+const BOTON_2 = 'min-h-11 rounded-lg border-[1.5px] border-borde bg-superficie px-3 text-sm font-bold text-tinta hover:border-verde disabled:opacity-60'
+const ENTRADA = 'h-11 rounded-xl border-[1.5px] border-borde bg-superficie px-3 text-base outline-none focus:border-verde'
 
 // Detalle de una reserva para la Capitanía: cambiar de cancha, reemplazar a un jugador o cancelarla.
 // Cada cambio les avisa por mail a los jugadores y se ve en "Mis reservas".
@@ -52,7 +52,7 @@ export default function DetalleReserva({ sesion, id, onCerrar, onCambio, onError
     <div className="fixed inset-0 z-40 flex items-end justify-center bg-[rgba(20,33,26,0.45)] p-0 sm:items-center sm:p-6"
       onMouseDown={(e) => { if (e.target === e.currentTarget) onCerrar() }}>
       <div role="dialog" aria-modal="true" aria-labelledby="detalle-titulo"
-        className="flex max-h-[92dvh] w-full max-w-lg flex-col gap-4 overflow-y-auto rounded-t-2xl bg-white p-5 shadow-xl sm:rounded-2xl">
+        className="flex max-h-[92dvh] w-full max-w-lg flex-col gap-4 overflow-y-auto rounded-t-2xl bg-superficie p-5 shadow-xl sm:rounded-2xl">
         <div className="flex items-start justify-between gap-3">
           <div className="flex flex-col gap-0.5">
             <h2 id="detalle-titulo" className="font-display text-2xl font-semibold">
@@ -100,13 +100,13 @@ export default function DetalleReserva({ sesion, id, onCerrar, onCambio, onError
               <section className="flex flex-col gap-2">
                 <span className="text-[13px] font-bold text-gris">{r.invitados.length === 1 ? 'Invitado no socio' : 'Invitados no socios'}</span>
                 {r.invitados.map((inv) => (
-                  <div key={inv.id} className={`flex items-center justify-between gap-3 rounded-xl border px-3 py-2 ${inv.pagado ? 'border-borde' : 'border-[#f2d3a6] bg-[#fff4e5]'}`}>
+                  <div key={inv.id} className={`flex items-center justify-between gap-3 rounded-xl border px-3 py-2 ${inv.pagado ? 'border-borde' : 'border-alerta-borde bg-alerta'}`}>
                     <span className="flex flex-col">
                       <span className="text-[15px] font-bold">{inv.nombre}</span>
                       <span className="text-[13px] text-gris">
                         DNI {inv.dni} · {inv.veces_mes === 1 ? 'primera vez este mes' : `${inv.veces_mes} veces este mes`}
                       </span>
-                      <span className={`text-[13px] font-bold ${inv.pagado ? 'text-verde' : 'text-[#8a4b00]'}`}>
+                      <span className={`text-[13px] font-bold ${inv.pagado ? 'text-verde' : 'text-alerta-fuerte'}`}>
                         {inv.pagado ? 'Presentó el comprobante' : 'A cobrar'}
                       </span>
                     </span>
@@ -141,7 +141,7 @@ export default function DetalleReserva({ sesion, id, onCerrar, onCambio, onError
               <div className="flex flex-wrap gap-2 border-t border-borde pt-4">
                 <button onClick={() => { setError(''); setModo('cancha') }} disabled={trabajando} className={BOTON}>Cambiar de cancha</button>
                 <button onClick={cancelar} disabled={trabajando}
-                  className="min-h-11 rounded-lg border-[1.5px] border-error px-3 text-sm font-bold text-error hover:bg-[#fdf3f2] disabled:opacity-60">
+                  className="min-h-11 rounded-lg border-[1.5px] border-error px-3 text-sm font-bold text-error hover:bg-error-claro disabled:opacity-60">
                   Cancelar reserva
                 </button>
               </div>
@@ -165,7 +165,7 @@ function MoverCancha({ r, trabajando, onCancelar, onMover }) {
         <div className="grid grid-cols-5 gap-1.5">
           {r.canchas_libres.map((n) => (
             <button key={n} onClick={() => setCancha(n)} aria-pressed={cancha === n}
-              className={`min-h-11 rounded-lg border-[1.5px] text-sm font-bold ${cancha === n ? 'border-verde bg-verde text-white' : 'border-borde bg-white text-tinta hover:border-verde'}`}>
+              className={`min-h-11 rounded-lg border-[1.5px] text-sm font-bold ${cancha === n ? 'border-verde bg-verde text-white' : 'border-borde bg-superficie text-tinta hover:border-verde'}`}>
               {n}
             </button>
           ))}
@@ -212,7 +212,7 @@ function Reemplazo({ sesion, r, sale, trabajando, onError, onCancelar, onElegir 
     <section className="flex flex-col gap-3 rounded-xl bg-fondo p-3">
       <span className="text-[15px] font-bold">Reemplazar a {sale.nombre}</span>
       {entra ? (
-        <div className="flex items-center justify-between gap-3 rounded-xl border-[1.5px] border-verde bg-white px-3 py-2">
+        <div className="flex items-center justify-between gap-3 rounded-xl border-[1.5px] border-verde bg-superficie px-3 py-2">
           <span className="flex flex-col">
             <span className="text-[15px] font-bold">{entra.nombre}</span>
             <span className="text-[13px] text-gris">Socio {entra.nro}{sale.titular ? ' · queda como titular' : ''}</span>
@@ -226,7 +226,7 @@ function Reemplazo({ sesion, r, sale, trabajando, onError, onCancelar, onElegir 
           {buscando && <span className="text-[13px] text-gris">Buscando…</span>}
           {!buscando && q.trim().length >= 2 && res.length === 0 && <span className="text-[14px] text-gris">No encontramos socios con esa búsqueda.</span>}
           {res.length > 0 && (
-            <ul className="flex max-h-56 flex-col overflow-y-auto rounded-xl border border-borde bg-white">
+            <ul className="flex max-h-56 flex-col overflow-y-auto rounded-xl border border-borde bg-superficie">
               {res.map((s) => {
                 const puede = s.estado === 'ok'
                 return (
@@ -235,7 +235,7 @@ function Reemplazo({ sesion, r, sale, trabajando, onError, onCancelar, onElegir 
                       className={`flex w-full items-center justify-between gap-3 px-3 py-2 text-left ${puede ? 'hover:bg-verde-claro' : 'text-gris'}`}>
                       <span className="flex flex-col">
                         <span className={`text-[15px] font-bold ${puede ? '' : 'line-through decoration-1'}`}>{s.nombre}</span>
-                        <span className={`text-[13px] ${puede ? 'text-gris' : 'text-[#9a3412]'}`}>Socio {s.nro}{puede ? '' : ` · ${NOTAS[s.estado] ?? 'No disponible'}`}</span>
+                        <span className={`text-[13px] ${puede ? 'text-gris' : 'text-advertencia'}`}>Socio {s.nro}{puede ? '' : ` · ${NOTAS[s.estado] ?? 'No disponible'}`}</span>
                       </span>
                       {puede && <span className="text-sm font-bold text-verde">Elegir</span>}
                     </button>

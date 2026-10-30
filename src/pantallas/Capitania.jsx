@@ -11,17 +11,17 @@ export const HORAS = Array.from({ length: 29 }, (_, i) => {
 })
 
 const COLOR = {
-  libre: 'bg-white border-borde',
-  reservada: 'bg-[#9ccbae] border-[#9ccbae] cursor-pointer',
+  libre: 'bg-superficie border-borde',
+  reservada: 'bg-reservada border-reservada cursor-pointer',
   bloqueada: 'bg-azul border-azul cursor-pointer',
 }
 // Bloqueos de mantenimiento: otro color, para distinguirlos de un vistazo
-const MANT = 'bg-[#C9822B] border-[#C9822B] cursor-pointer'
-const MANT_FOCO = 'bg-[#a8691d] border-[#a8691d]'
+const MANT = 'bg-mant border-mant cursor-pointer'
+const MANT_FOCO = 'bg-mant-oscuro border-mant-oscuro'
 // Mismo bloque bajo el mouse (todas sus celdas juntas)
 const COLOR_FOCO = {
-  reservada: 'bg-[#5fa97c] border-[#3f8a5d]',
-  bloqueada: 'bg-[#3d63ad] border-[#3d63ad]',
+  reservada: 'bg-reservada-foco border-reservada-borde',
+  bloqueada: 'bg-bloqueada-foco border-bloqueada-foco',
 }
 
 export default function Capitania({ sesion, onError }) {
@@ -197,19 +197,19 @@ export default function Capitania({ sesion, onError }) {
         <Titulo sub={fechaLarga(fecha)}>Panel de Capitanía</Titulo>
         <div className="flex items-center gap-2" role="group" aria-label="Elegir día">
           <button type="button" onClick={() => setFecha(sumarDias(fecha, -1))} aria-label="Día anterior"
-            className="flex size-11 items-center justify-center rounded-xl border-[1.5px] border-borde bg-white text-tinta hover:border-verde">
+            className="flex size-11 items-center justify-center rounded-xl border-[1.5px] border-borde bg-superficie text-tinta hover:border-verde">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg>
           </button>
           <button type="button" onClick={() => setFecha(hoy())} disabled={fecha === hoy()}
-            className="h-11 rounded-xl border-[1.5px] border-verde bg-white px-4 font-bold text-verde hover:bg-verde-claro disabled:border-borde disabled:text-gris disabled:hover:bg-white">
+            className="h-11 rounded-xl border-[1.5px] border-verde bg-superficie px-4 font-bold text-verde hover:bg-verde-claro disabled:border-borde disabled:text-gris disabled:hover:bg-superficie">
             Hoy
           </button>
           <button type="button" onClick={() => setFecha(sumarDias(fecha, 1))} aria-label="Día siguiente"
-            className="flex size-11 items-center justify-center rounded-xl border-[1.5px] border-borde bg-white text-tinta hover:border-verde">
+            className="flex size-11 items-center justify-center rounded-xl border-[1.5px] border-borde bg-superficie text-tinta hover:border-verde">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
           </button>
           <input type="date" value={fecha} onChange={(e) => e.target.value && setFecha(e.target.value)} aria-label="Ir a una fecha"
-            className="h-11 rounded-xl border-[1.5px] border-borde bg-white px-3 text-base" />
+            className="h-11 rounded-xl border-[1.5px] border-borde bg-superficie px-3 text-base" />
         </div>
       </div>
 
@@ -218,11 +218,11 @@ export default function Capitania({ sesion, onError }) {
 
 
       <div className="flex flex-wrap gap-4 text-[13px] text-gris">
-        <span className="inline-flex items-center gap-1.5"><span className="size-3.5 rounded border border-borde bg-white" />Libre</span>
-        <span className="inline-flex items-center gap-1.5"><span className="size-3.5 rounded bg-[#9ccbae]" />Reservada (tocá para ver o modificar)</span>
+        <span className="inline-flex items-center gap-1.5"><span className="size-3.5 rounded border border-borde bg-superficie" />Libre</span>
+        <span className="inline-flex items-center gap-1.5"><span className="size-3.5 rounded bg-reservada" />Reservada (tocá para ver o modificar)</span>
         <span className="inline-flex items-center gap-1.5"><span className="size-3.5 rounded bg-azul" />Bloqueada</span>
-        <span className="inline-flex items-center gap-1.5"><span className="size-3.5 rounded bg-[#C9822B]" />Mantenimiento</span>
-        <span className="inline-flex items-center gap-1.5"><span className="size-3.5 rounded bg-[#9ccbae] shadow-[inset_0_-4px_0_#D0A966]" />Con invitado a cobrar</span>
+        <span className="inline-flex items-center gap-1.5"><span className="size-3.5 rounded bg-mant" />Mantenimiento</span>
+        <span className="inline-flex items-center gap-1.5"><span className="size-3.5 rounded bg-reservada shadow-[inset_0_-4px_0_var(--color-dorado)]" />Con invitado a cobrar</span>
       </div>
 
       <p aria-live="polite" className="-mb-2 min-h-6 truncate text-[14px] text-tinta">
@@ -237,12 +237,12 @@ export default function Capitania({ sesion, onError }) {
       </p>
 
       {/* Alto mínimo = 15 canchas, así el contenido no salta mientras carga */}
-      <div className="relative min-h-[556px] overflow-x-auto rounded-2xl border border-borde bg-white p-3" aria-busy={!panelVisible}
+      <div className="relative min-h-[556px] overflow-x-auto rounded-2xl border border-borde bg-superficie p-3" aria-busy={!panelVisible}
         onMouseLeave={() => setFoco(null)}>
         {grilla ? (
           <div className={`grid gap-0.5 transition-opacity ${panelVisible ? '' : 'opacity-40'}`}
             style={{ gridTemplateColumns: `76px repeat(${grilla.horas.length}, minmax(24px, 1fr))`, minWidth: 820 }}>
-            <span className="sticky -left-3 z-10 -ml-3 bg-white pl-3" />
+            <span className="sticky -left-3 z-10 -ml-3 bg-superficie pl-3" />
             {grilla.horas.map((h, i) => (
               <span key={h} className="whitespace-nowrap pb-1 text-[11px] font-bold text-gris">{i % 2 === 0 ? h : ''}</span>
             ))}
@@ -257,14 +257,14 @@ export default function Capitania({ sesion, onError }) {
       </div>
 
       <div className="grid gap-5 md:grid-cols-2">
-        <form onSubmit={bloquear} className="flex flex-col gap-3 rounded-2xl border border-borde bg-white p-4">
+        <form onSubmit={bloquear} className="flex flex-col gap-3 rounded-2xl border border-borde bg-superficie p-4">
           <h2 className="text-lg font-bold">Bloquear canchas · {fechaLarga(fecha)}</h2>
           <fieldset className="flex flex-col gap-2">
             <legend className="mb-2 text-[13px] font-bold">Canchas</legend>
             <div className="grid grid-cols-5 gap-1.5">
               {Array.from({ length: 15 }, (_, i) => i + 1).map((n) => (
                 <button type="button" key={n} onClick={() => alternarCancha(n)} aria-pressed={canchas.includes(n)}
-                  className={`min-h-11 rounded-lg border-[1.5px] font-bold ${canchas.includes(n) ? 'border-azul bg-azul text-white' : 'border-borde bg-white'}`}>
+                  className={`min-h-11 rounded-lg border-[1.5px] font-bold ${canchas.includes(n) ? 'border-azul bg-azul text-white' : 'border-borde bg-superficie'}`}>
                   {n}
                 </button>
               ))}
@@ -280,7 +280,7 @@ export default function Capitania({ sesion, onError }) {
               <label htmlFor="motivo-otro" className="text-[13px] font-bold">¿Cuál es el motivo?</label>
               <input id="motivo-otro" value={motivoOtro} onChange={(e) => setMotivoOtro(e.target.value)} maxLength={60} required autoFocus
                 placeholder="Ej.: Clínica de saque, Evento del Club" 
-                className="h-11 rounded-xl border-[1.5px] border-borde bg-white px-3 text-[15px] outline-none focus:border-azul" />
+                className="h-11 rounded-xl border-[1.5px] border-borde bg-superficie px-3 text-[15px] outline-none focus:border-azul" />
               <span className="text-[12px] text-gris">Los socios lo ven en el aviso si el bloqueo les cancela una reserva.</span>
             </div>
           )}
@@ -289,7 +289,7 @@ export default function Capitania({ sesion, onError }) {
             Repetir todas las semanas (mismo día y horario)
           </label>
           {conflicto && (
-            <div role="alert" className="flex flex-col gap-3 rounded-xl border border-[#f2d3a6] bg-[#fff4e5] p-3.5 text-[#4a3a22]">
+            <div role="alert" className="flex flex-col gap-3 rounded-xl border border-alerta-borde bg-alerta p-3.5 text-alerta-texto">
               <strong className="text-[15px]">
                 Este bloqueo pisa {conflicto.afectadas.length === 1 ? '1 reserva' : `${conflicto.afectadas.length} reservas`} de socios:
               </strong>
@@ -306,7 +306,7 @@ export default function Capitania({ sesion, onError }) {
                   className="min-h-11 rounded-lg bg-error px-4 font-bold text-white disabled:opacity-60">
                   {guardando ? 'Guardando…' : `Bloquear y cancelar ${conflicto.afectadas.length === 1 ? 'la reserva' : 'las reservas'}`}
                 </button>
-                <button type="button" onClick={() => setConflicto(null)} className="min-h-11 rounded-lg px-4 font-bold text-[#8a4b00]">
+                <button type="button" onClick={() => setConflicto(null)} className="min-h-11 rounded-lg px-4 font-bold text-alerta-fuerte">
                   Volver
                 </button>
               </div>
@@ -319,12 +319,12 @@ export default function Capitania({ sesion, onError }) {
         </form>
 
         {/* Mide lo mismo que "Bloquear canchas": si hay muchos bloqueos, la lista scrollea */}
-        <div className="flex min-h-0 flex-col gap-2 rounded-2xl border border-borde bg-white p-4 md:relative">
+        <div className="flex min-h-0 flex-col gap-2 rounded-2xl border border-borde bg-superficie p-4 md:relative">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-lg font-bold">Bloqueos del día</h2>
             {(panelVisible?.bloqueos ?? []).some((b) => !b.semanal) && (
               <button type="button" onClick={desbloquearDia}
-                className="min-h-11 rounded-lg border-[1.5px] border-error px-3 text-sm font-bold text-error hover:bg-[#fdf3f2]">
+                className="min-h-11 rounded-lg border-[1.5px] border-error px-3 text-sm font-bold text-error hover:bg-error-claro">
                 Desbloquear todo
               </button>
             )}
@@ -334,7 +334,7 @@ export default function Capitania({ sesion, onError }) {
           {grupos.map((g) => (
             <div key={g.clave} onMouseEnter={() => setGrupoFoco(g.clave)} onMouseLeave={() => setGrupoFoco(null)}
               className={`flex items-center justify-between gap-3 rounded-xl px-3 py-2 transition ${
-                gruposDeFoco.includes(g.clave) || grupoFoco === g.clave ? 'bg-[#cfdaf0]' : 'bg-azul-claro'
+                gruposDeFoco.includes(g.clave) || grupoFoco === g.clave ? 'bg-azul-claro-foco' : 'bg-azul-claro'
               }`}>
               <span className="flex flex-col">
                 <strong className="text-azul">
@@ -349,7 +349,7 @@ export default function Capitania({ sesion, onError }) {
         </div>
       </div>
 
-      <section className="flex flex-col gap-3 rounded-2xl border border-[#f2d3a6] bg-[#fff8ee] p-4">
+      <section className="flex flex-col gap-3 rounded-2xl border border-alerta-borde bg-alerta-suave p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-col">
             <h2 className="text-lg font-bold">Cerrar todas las canchas</h2>
@@ -362,18 +362,18 @@ export default function Capitania({ sesion, onError }) {
           <div className="flex flex-wrap items-center gap-2">
             {['Lluvia', 'Mantenimiento'].map((m) => (
               <button key={m} type="button" onClick={() => setCierreMotivo(m)} aria-pressed={cierreMotivo === m}
-                className={`min-h-11 rounded-full border-[1.5px] px-4 font-bold ${cierreMotivo === m ? 'border-[#8a4b00] bg-[#8a4b00] text-white' : 'border-borde bg-white text-tinta'}`}>
+                className={`min-h-11 rounded-full border-[1.5px] px-4 font-bold ${cierreMotivo === m ? 'border-alerta-fuerte bg-alerta-fuerte text-white' : 'border-borde bg-superficie text-tinta'}`}>
                 {m}
               </button>
             ))}
             <button type="button" onClick={cerrarDia} disabled={guardando || diaTerminado || !!cierre}
-              className="min-h-11 rounded-xl bg-[#8a4b00] px-4 font-bold text-white disabled:bg-apagado disabled:text-gris">
+              className="min-h-11 rounded-xl bg-alerta-fuerte px-4 font-bold text-white disabled:bg-apagado disabled:text-gris">
               Cerrar canchas
             </button>
           </div>
         </div>
         {cierre && (
-          <div role="alert" className="flex flex-col gap-3 rounded-xl border border-[#f2d3a6] bg-white p-3.5 text-[#4a3a22]">
+          <div role="alert" className="flex flex-col gap-3 rounded-xl border border-alerta-borde bg-superficie p-3.5 text-alerta-texto">
             <strong className="text-[15px]">
               Se cierran las 15 canchas por {cierre.datos.motivo.toLowerCase()}, de {cierre.datos.desde} a {cierre.datos.hasta}.
               {' '}{cierre.afectadas.length === 0 ? 'No hay reservas para cancelar.'
@@ -391,7 +391,7 @@ export default function Capitania({ sesion, onError }) {
                 className="min-h-11 rounded-lg bg-error px-4 font-bold text-white disabled:opacity-60">
                 {guardando ? 'Guardando…' : 'Confirmar cierre'}
               </button>
-              <button type="button" onClick={() => setCierre(null)} className="min-h-11 rounded-lg px-4 font-bold text-[#8a4b00]">
+              <button type="button" onClick={() => setCierre(null)} className="min-h-11 rounded-lg px-4 font-bold text-alerta-fuerte">
                 Volver
               </button>
             </div>
@@ -437,7 +437,7 @@ export function CambiarClave({ sesion, onError }) {
   }
 
   return (
-    <section className="flex flex-col gap-3 rounded-2xl border border-borde bg-white p-4">
+    <section className="flex flex-col gap-3 rounded-2xl border border-borde bg-superficie p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-col">
           <h2 className="text-lg font-bold">Mi cuenta</h2>
@@ -456,7 +456,7 @@ export function CambiarClave({ sesion, onError }) {
             <div key={id} className="flex flex-col gap-1.5">
               <label htmlFor={id} className="text-[13px] font-bold">{label}</label>
               <input id={id} type="password" autoComplete={ac} value={v} onChange={(e) => set(e.target.value)} required
-                className="h-11 rounded-xl border-[1.5px] border-borde bg-white px-3 text-base outline-none focus:border-verde" />
+                className="h-11 rounded-xl border-[1.5px] border-borde bg-superficie px-3 text-base outline-none focus:border-verde" />
             </div>
           ))}
           {msg && <div className="sm:col-span-3"><Aviso tipo={msg.tipo}>{msg.texto}</Aviso></div>}
@@ -507,7 +507,7 @@ export function Fila({ fila, horas, onReservada, onFoco, enBloque }) {
   return (
     <>
       {/* Fija al hacer scroll horizontal (en el celular la grilla no entra entera) */}
-      <span className="sticky -left-3 z-10 -ml-3 flex h-8 items-center bg-white pl-3 text-[13px] font-bold shadow-[6px_0_6px_-6px_rgba(20,33,26,0.25)]">Cancha {fila.cancha}</span>
+      <span className="sticky -left-3 z-10 -ml-3 flex h-8 items-center bg-superficie pl-3 text-[13px] font-bold shadow-[6px_0_6px_-6px_rgba(20,33,26,0.25)]">Cancha {fila.cancha}</span>
       {fila.celdas.map((c, i) => {
         const info = { cancha: fila.cancha, hora: horas[i], estado: c.estado, detalle: c.detalle, reserva_id: c.reserva_id }
         const foco = enBloque(fila.cancha, horas[i], c)
@@ -517,7 +517,7 @@ export function Fila({ fila, horas, onReservada, onFoco, enBloque }) {
           <button key={i} aria-label={`Cancha ${fila.cancha}, ${horas[i]}: ${c.detalle}`}
             onMouseEnter={() => onFoco(info)} onFocus={() => onFoco(info)}
             onClick={() => onReservada(c, fila.cancha, horas[i])}
-            className={`h-8 rounded border transition-colors ${color}${c.invitado === 'a_cobrar' ? ' shadow-[inset_0_-4px_0_#D0A966]' : ''}`} />
+            className={`h-8 rounded border transition-colors ${color}${c.invitado === 'a_cobrar' ? ' shadow-[inset_0_-4px_0_var(--color-dorado)]' : ''}`} />
         ) : (
           <span key={i} onMouseEnter={() => onFoco(info)}
             className={`h-8 rounded border transition-colors ${color}`} />
@@ -532,7 +532,7 @@ export function Selector({ id, label, valor, setValor, opciones }) {
     <div className="flex flex-1 flex-col gap-1.5">
       <label htmlFor={id} className="text-[13px] font-bold">{label}</label>
       <select id={id} value={valor} onChange={(e) => setValor(e.target.value)}
-        className="h-11 rounded-xl border-[1.5px] border-borde bg-white px-2.5 text-[15px]">
+        className="h-11 rounded-xl border-[1.5px] border-borde bg-superficie px-2.5 text-[15px]">
         {opciones.map((o) => <option key={o}>{o}</option>)}
       </select>
     </div>

@@ -22,7 +22,7 @@ function Tarjeta() {
   if (!android && !ios && !esCelular()) return null
 
   return (
-    <section className="flex flex-col gap-3 rounded-xl border border-borde bg-white p-4">
+    <section className="flex flex-col gap-3 rounded-xl border border-borde bg-superficie p-4">
       <div className="flex items-center gap-3">
         <img src="/icons/icon-192.png" alt="" width="44" height="44" className="size-11 shrink-0 rounded-xl border border-borde" />
         <div className="flex min-w-0 flex-col">
@@ -32,13 +32,13 @@ function Tarjeta() {
       </div>
       {android ? (
         <button onClick={instalar}
-          className="min-h-11 rounded-xl border-[1.5px] border-verde bg-white px-4 text-[15px] font-bold text-verde hover:bg-verde-claro">
+          className="min-h-11 rounded-xl border-[1.5px] border-verde bg-superficie px-4 text-[15px] font-bold text-verde hover:bg-verde-claro">
           Agregar a la pantalla de inicio
         </button>
       ) : (
         <>
           <button onClick={() => setAbierto(!abierto)} aria-expanded={abierto}
-            className="min-h-11 rounded-xl border-[1.5px] border-verde bg-white px-4 text-[15px] font-bold text-verde hover:bg-verde-claro">
+            className="min-h-11 rounded-xl border-[1.5px] border-verde bg-superficie px-4 text-[15px] font-bold text-verde hover:bg-verde-claro">
             {abierto ? 'Cerrar' : 'Cómo agregarla'}
           </button>
           {abierto && (ios ? (

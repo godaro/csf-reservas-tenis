@@ -59,7 +59,7 @@ export default function MisReservas({ sesion, onReservar, onError }) {
       {!reservas && !error && <Cargando />}
 
       {reservas && activas.length === 0 && (
-        <div className="flex flex-col gap-3 rounded-2xl border border-borde bg-white p-5">
+        <div className="flex flex-col gap-3 rounded-2xl border border-borde bg-superficie p-5">
           <span className="text-base">No tenés reservas activas.</span>
           <BotonPrincipal onClick={onReservar}>Reservar una cancha</BotonPrincipal>
         </div>
@@ -69,7 +69,7 @@ export default function MisReservas({ sesion, onReservar, onError }) {
         const otros = [...r.jugadores.filter((j) => j.nro !== sesion.nro).map((j) => j.nombre), ...(r.invitados ?? []).map((i) => `${i.nombre} (invitado)`)]
         const titular = r.jugadores.find((j) => j.titular)
         return (
-          <article key={r.id} className="flex flex-col gap-3 rounded-2xl border border-borde bg-white p-4">
+          <article key={r.id} className="flex flex-col gap-3 rounded-2xl border border-borde bg-superficie p-4">
             <div className="flex items-center justify-between">
               <span className="inline-flex min-h-6 items-center rounded-full bg-verde-claro px-2.5 text-xs font-bold tracking-wider text-verde-oscuro">ACTIVA</span>
               <span className="text-sm text-gris">{r.tipo === 'single' ? 'Single' : 'Dobles'}</span>
@@ -84,7 +84,7 @@ export default function MisReservas({ sesion, onReservar, onError }) {
               <button
                 onClick={() => cancelar(r)}
                 disabled={cancelando === r.id}
-                className="h-11 rounded-xl border-[1.5px] border-error bg-white text-[15px] font-bold text-error disabled:opacity-60"
+                className="h-11 rounded-xl border-[1.5px] border-error bg-superficie text-[15px] font-bold text-error disabled:opacity-60"
               >
                 {cancelando === r.id ? 'Cancelando…' : 'Cancelar reserva'}
               </button>
@@ -102,8 +102,8 @@ export default function MisReservas({ sesion, onReservar, onError }) {
           ? `La canceló la Capitanía${r.motivo_cancelacion && r.motivo_cancelacion !== 'Cancelada por la Capitanía' ? `: ${r.motivo_cancelacion}` : ''}.`
           : `La canceló ${titular?.nombre ?? 'el titular'}.`
         return (
-          <article key={r.id} className="flex flex-col gap-2 rounded-2xl border border-[#f5c2bd] bg-[#fdf3f2] p-4">
-            <span className="inline-flex min-h-6 items-center self-start rounded-full bg-[#fbe0dd] px-2.5 text-xs font-bold tracking-wider text-error">CANCELADA</span>
+          <article key={r.id} className="flex flex-col gap-2 rounded-2xl border border-error-borde bg-error-claro p-4">
+            <span className="inline-flex min-h-6 items-center self-start rounded-full bg-error-fondo px-2.5 text-xs font-bold tracking-wider text-error">CANCELADA</span>
             <strong className="font-display text-xl font-semibold text-gris line-through decoration-1">
               {fechaCorta(r.fecha)} · {r.hora_inicio} a {r.hora_fin} · Cancha {r.cancha}
             </strong>

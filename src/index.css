@@ -15,8 +15,72 @@
   --color-apagado: #eceeea;
   --color-error: #b42318;
 
+  /* Superficies y estados (cambian en modo oscuro) */
+  --color-superficie: #ffffff;
+  --color-alerta: #fff4e5;
+  --color-alerta-suave: #fff8ee;
+  --color-alerta-borde: #f2d3a6;
+  --color-alerta-texto: #4a3a22;
+  --color-alerta-fuerte: #8a4b00;
+  --color-advertencia: #9a3412;
+  --color-error-fondo: #fdecea;
+  --color-error-claro: #fdf3f2;
+  --color-error-borde: #f5c2bd;
+  --color-reservada: #9ccbae;
+  --color-reservada-foco: #5fa97c;
+  --color-reservada-borde: #3f8a5d;
+  --color-bloqueada-foco: #3d63ad;
+  --color-azul-claro-foco: #cfdaf0;
+  --color-mant: #c9822b;
+  --color-mant-oscuro: #a8691d;
+  --color-mant-claro: #fbf1e4;
+  --color-wa: #1a7f45;
+  --color-wa-claro: #eaf6ee;
+
   --font-display: "Oswald", "Arial Narrow", sans-serif;
   --font-sans: "PT Sans", system-ui, sans-serif;
+}
+
+:root {
+  color-scheme: light;
+}
+
+/* Modo oscuro: sigue la configuración del celular o la compu */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --color-fondo: #0f1613;
+    --color-superficie: #18221d;
+    --color-tinta: #e6ece8;
+    --color-gris: #a2aea7;
+    --color-borde: #2f3b35;
+    --color-apagado: #232e28;
+    --color-verde: #2f8f5b;
+    --color-verde-oscuro: #3aa56b;
+    --color-verde-claro: #1d3327;
+    --color-azul: #4f72b8;
+    --color-azul-claro: #1c2840;
+    --color-error: #e5534b;
+    --color-alerta: #2d2316;
+    --color-alerta-suave: #261e14;
+    --color-alerta-borde: #5c4526;
+    --color-alerta-texto: #f1dcc0;
+    --color-alerta-fuerte: #f0a95b;
+    --color-advertencia: #f39a6b;
+    --color-error-fondo: #381c1a;
+    --color-error-claro: #2e1918;
+    --color-error-borde: #6b2c27;
+    --color-reservada: #3f7a57;
+    --color-reservada-foco: #57a079;
+    --color-reservada-borde: #6cb38a;
+    --color-bloqueada-foco: #7392d0;
+    --color-azul-claro-foco: #2b3c5c;
+    --color-mant: #c9822b;
+    --color-mant-oscuro: #e09a45;
+    --color-mant-claro: #33261a;
+    --color-wa: #4cc47e;
+    --color-wa-claro: #183224;
+  }
 }
 
 html,

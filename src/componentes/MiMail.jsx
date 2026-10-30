@@ -51,7 +51,7 @@ export default function MiMail({ sesion, modo = 'aviso', onError }) {
       <div className="flex flex-wrap gap-2">
         <input id={`mail-${modo}`} type="email" inputMode="email" autoComplete="email" autoCapitalize="none" spellCheck={false}
           required value={valor} onChange={(e) => setValor(e.target.value)} placeholder="nombre@gmail.com"
-          className="h-12 min-w-0 flex-1 rounded-xl border-[1.5px] border-borde bg-white px-3.5 text-base outline-none focus:border-verde" />
+          className="h-12 min-w-0 flex-1 rounded-xl border-[1.5px] border-borde bg-superficie px-3.5 text-base outline-none focus:border-verde" />
         <button disabled={guardando || !valor.trim()}
           className="h-12 rounded-xl bg-verde px-5 font-bold text-white disabled:bg-apagado disabled:text-gris">
           {guardando ? 'Guardando…' : 'Guardar'}
@@ -67,7 +67,7 @@ export default function MiMail({ sesion, modo = 'aviso', onError }) {
     }
     if (perfil.email_valido || oculto) return null
     return (
-      <section className="mb-4 flex flex-col gap-3 rounded-xl border border-[#f2d3a6] bg-[#fff4e5] p-4 text-[#4a3a22]">
+      <section className="mb-4 flex flex-col gap-3 rounded-xl border border-alerta-borde bg-alerta p-4 text-alerta-texto">
         <div className="flex flex-col gap-1">
           <strong className="text-[15px]">No tenemos un mail válido tuyo</strong>
           <span className="text-[14px] leading-snug">
@@ -77,7 +77,7 @@ export default function MiMail({ sesion, modo = 'aviso', onError }) {
         {editando ? formulario : (
           <div className="flex flex-wrap gap-2">
             <button onClick={() => setEditando(true)} className="min-h-11 rounded-xl bg-verde px-4 font-bold text-white">Cargar mi mail</button>
-            <button onClick={ahoraNo} className="min-h-11 rounded-xl px-3 font-bold text-[#8a4b00]">Ahora no</button>
+            <button onClick={ahoraNo} className="min-h-11 rounded-xl px-3 font-bold text-alerta-fuerte">Ahora no</button>
           </div>
         )}
       </section>
@@ -86,11 +86,11 @@ export default function MiMail({ sesion, modo = 'aviso', onError }) {
 
   // modo "ficha"
   return (
-    <section className="flex flex-col gap-3 rounded-2xl border border-borde bg-white p-4">
+    <section className="flex flex-col gap-3 rounded-2xl border border-borde bg-superficie p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex min-w-0 flex-col">
           <span className="text-[13px] font-bold text-gris">Avisos por mail</span>
-          <span className={`truncate text-[15px] ${perfil.email_valido ? 'text-tinta' : 'text-[#9a3412]'}`}>
+          <span className={`truncate text-[15px] ${perfil.email_valido ? 'text-tinta' : 'text-advertencia'}`}>
             {perfil.email_valido ? perfil.email : 'Sin mail válido: no recibís avisos'}
           </span>
         </div>

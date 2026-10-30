@@ -49,19 +49,19 @@ export default function Mantenimiento({ sesion, onIngresar, onError, aviso }) {
         <Titulo sub={fechaLarga(fecha)}>Canchas de tenis</Titulo>
         <div className="flex items-center gap-2">
           <button type="button" onClick={() => setFecha(sumarDias(fecha, -1))} aria-label="Día anterior"
-            className="flex size-11 items-center justify-center rounded-xl border-[1.5px] border-borde bg-white text-tinta hover:border-verde">
+            className="flex size-11 items-center justify-center rounded-xl border-[1.5px] border-borde bg-superficie text-tinta hover:border-verde">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg>
           </button>
           <button type="button" onClick={() => setFecha(hoy())} disabled={fecha === hoy()}
-            className="h-11 rounded-xl border-[1.5px] border-verde bg-white px-4 font-bold text-verde hover:bg-verde-claro disabled:border-borde disabled:text-gris disabled:hover:bg-white">
+            className="h-11 rounded-xl border-[1.5px] border-verde bg-superficie px-4 font-bold text-verde hover:bg-verde-claro disabled:border-borde disabled:text-gris disabled:hover:bg-superficie">
             Hoy
           </button>
           <button type="button" onClick={() => setFecha(sumarDias(fecha, 1))} aria-label="Día siguiente"
-            className="flex size-11 items-center justify-center rounded-xl border-[1.5px] border-borde bg-white text-tinta hover:border-verde">
+            className="flex size-11 items-center justify-center rounded-xl border-[1.5px] border-borde bg-superficie text-tinta hover:border-verde">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
           </button>
           <input type="date" value={fecha} onChange={(e) => e.target.value && setFecha(e.target.value)} aria-label="Ir a una fecha"
-            className="h-11 rounded-xl border-[1.5px] border-borde bg-white px-3 text-base" />
+            className="h-11 rounded-xl border-[1.5px] border-borde bg-superficie px-3 text-base" />
         </div>
       </div>
 
@@ -70,10 +70,10 @@ export default function Mantenimiento({ sesion, onIngresar, onError, aviso }) {
       {ok && <Aviso>{ok}</Aviso>}
 
       <div className="flex flex-wrap gap-4 text-[13px] text-gris">
-        <span className="inline-flex items-center gap-1.5"><span className="size-3.5 rounded border border-borde bg-white" />Libre</span>
-        <span className="inline-flex items-center gap-1.5"><span className="size-3.5 rounded bg-[#9ccbae]" />En uso</span>
+        <span className="inline-flex items-center gap-1.5"><span className="size-3.5 rounded border border-borde bg-superficie" />Libre</span>
+        <span className="inline-flex items-center gap-1.5"><span className="size-3.5 rounded bg-reservada" />En uso</span>
         <span className="inline-flex items-center gap-1.5"><span className="size-3.5 rounded bg-azul" />Bloqueada</span>
-        <span className="inline-flex items-center gap-1.5"><span className="size-3.5 rounded bg-[#C9822B]" />Mantenimiento</span>
+        <span className="inline-flex items-center gap-1.5"><span className="size-3.5 rounded bg-mant" />Mantenimiento</span>
       </div>
 
       <p aria-live="polite" className="-mb-2 min-h-6 truncate text-[14px] text-tinta">
@@ -83,12 +83,12 @@ export default function Mantenimiento({ sesion, onIngresar, onError, aviso }) {
         ) : <span className="text-gris">Tocá o pasá el mouse por una celda para ver el detalle.</span>}
       </p>
 
-      <div className="relative min-h-[556px] overflow-x-auto rounded-2xl border border-borde bg-white p-3" aria-busy={!visible}
+      <div className="relative min-h-[556px] overflow-x-auto rounded-2xl border border-borde bg-superficie p-3" aria-busy={!visible}
         onMouseLeave={() => setFoco(null)}>
         {grilla ? (
           <div className={`grid gap-0.5 transition-opacity ${visible ? '' : 'opacity-40'}`}
             style={{ gridTemplateColumns: `76px repeat(${grilla.horas.length}, minmax(24px, 1fr))`, minWidth: 820 }}>
-            <span className="sticky -left-3 z-10 -ml-3 bg-white pl-3" />
+            <span className="sticky -left-3 z-10 -ml-3 bg-superficie pl-3" />
             {grilla.horas.map((h, i) => (
               <span key={h} className="whitespace-nowrap pb-1 text-[11px] font-bold text-gris">{i % 2 === 0 ? h : ''}</span>
             ))}
@@ -103,7 +103,7 @@ export default function Mantenimiento({ sesion, onIngresar, onError, aviso }) {
       </div>
 
       {!sesion && !ingresando && (
-        <section className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-borde bg-white p-4">
+        <section className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-borde bg-superficie p-4">
           <span className="text-[15px]">¿Necesitás modificar canchas para mantenimiento?</span>
           <button onClick={() => setIngresando(true)} className="min-h-11 rounded-xl bg-verde px-5 font-bold text-white hover:bg-verde-oscuro">
             Ingresar
@@ -111,7 +111,7 @@ export default function Mantenimiento({ sesion, onIngresar, onError, aviso }) {
         </section>
       )}
       {!sesion && ingresando && (
-        <section className="flex flex-col gap-3 rounded-2xl border border-borde bg-white p-4">
+        <section className="flex flex-col gap-3 rounded-2xl border border-borde bg-superficie p-4">
           {errorIngreso && <Aviso tipo="error">{errorIngreso}</Aviso>}
           <Login modo="mantenimiento" onIngresar={ingresar} />
           <button onClick={() => { setIngresando(false); setErrorIngreso('') }} className="min-h-11 self-center font-bold text-gris">Cancelar</button>
@@ -174,21 +174,21 @@ function EditorBloqueos({ sesion, fecha, mios, onListo, onError }) {
 
   return (
     <div className="grid gap-5 md:grid-cols-2">
-      <section className="flex flex-col gap-3 rounded-2xl border border-borde bg-white p-4">
+      <section className="flex flex-col gap-3 rounded-2xl border border-borde bg-superficie p-4">
         <h2 className="text-lg font-bold">Bloqueos de mantenimiento · {fechaLarga(fecha)}</h2>
         {mios.length === 0 ? (
           <p className="text-[15px] text-gris">No hay bloqueos de mantenimiento este día.</p>
         ) : (
           <ul className="flex flex-col">
             {mios.map((g) => (
-              <li key={g.clave} className={`flex items-center justify-between gap-3 border-b border-borde py-2.5 last:border-0 ${editando?.clave === g.clave ? 'bg-[#fbf1e4]' : ''}`}>
+              <li key={g.clave} className={`flex items-center justify-between gap-3 border-b border-borde py-2.5 last:border-0 ${editando?.clave === g.clave ? 'bg-mant-claro' : ''}`}>
                 <span className="flex min-w-0 flex-col">
                   <span className="text-[15px] font-bold">Cancha{g.canchas.length > 1 ? 's' : ''} {rangos(g.canchas)} · {g.desde} a {g.hasta}</span>
                   <span className="text-[13px] text-gris">{g.motivo}{g.semanal ? ' · todas las semanas' : ''}</span>
                 </span>
                 <span className="flex shrink-0 gap-1.5">
                   <button onClick={() => modificar(g)} className="min-h-11 rounded-lg border-[1.5px] border-borde px-3 text-sm font-bold hover:border-verde">Modificar</button>
-                  <button onClick={() => borrar(g)} className="min-h-11 rounded-lg border-[1.5px] border-error px-3 text-sm font-bold text-error hover:bg-[#fdf3f2]">Borrar</button>
+                  <button onClick={() => borrar(g)} className="min-h-11 rounded-lg border-[1.5px] border-error px-3 text-sm font-bold text-error hover:bg-error-claro">Borrar</button>
                 </span>
               </li>
             ))}
@@ -199,7 +199,7 @@ function EditorBloqueos({ sesion, fecha, mios, onListo, onError }) {
         </p>
       </section>
 
-      <form onSubmit={guardar} className="flex flex-col gap-3 rounded-2xl border border-borde bg-white p-4">
+      <form onSubmit={guardar} className="flex flex-col gap-3 rounded-2xl border border-borde bg-superficie p-4">
         <h2 className="text-lg font-bold">{editando ? 'Modificar bloqueo' : 'Bloquear por mantenimiento'}</h2>
         <fieldset className="flex flex-col gap-2">
           <legend className="mb-2 flex w-full items-center justify-between text-[13px] font-bold">
@@ -210,7 +210,7 @@ function EditorBloqueos({ sesion, fecha, mios, onListo, onError }) {
           <div className="grid grid-cols-5 gap-1.5">
             {Array.from({ length: 15 }, (_, i) => i + 1).map((n) => (
               <button type="button" key={n} onClick={() => alternar(n)} aria-pressed={f.canchas.includes(n)}
-                className={`min-h-11 rounded-lg border-[1.5px] font-bold ${f.canchas.includes(n) ? 'border-[#C9822B] bg-[#C9822B] text-white' : 'border-borde bg-white'}`}>
+                className={`min-h-11 rounded-lg border-[1.5px] font-bold ${f.canchas.includes(n) ? 'border-mant bg-mant text-white' : 'border-borde bg-superficie'}`}>
                 {n}
               </button>
             ))}
@@ -224,10 +224,10 @@ function EditorBloqueos({ sesion, fecha, mios, onListo, onError }) {
           <label htmlFor="mant-detalle" className="text-[13px] font-bold">Detalle (opcional)</label>
           <input id="mant-detalle" value={f.detalle} onChange={(e) => setF({ ...f, detalle: e.target.value })} maxLength={60}
             placeholder="Ej.: Riego, Pasada de rastrillo, Cambio de red"
-            className="h-11 rounded-xl border-[1.5px] border-borde bg-white px-3 text-[15px] outline-none focus:border-verde" />
+            className="h-11 rounded-xl border-[1.5px] border-borde bg-superficie px-3 text-[15px] outline-none focus:border-verde" />
         </div>
         <label className="flex min-h-8 items-center gap-2 text-[15px]">
-          <input type="checkbox" checked={f.semanal} onChange={(e) => setF({ ...f, semanal: e.target.checked })} className="size-4.5 accent-[#C9822B]" />
+          <input type="checkbox" checked={f.semanal} onChange={(e) => setF({ ...f, semanal: e.target.checked })} className="size-4.5 accent-mant" />
           Repetir todas las semanas (mismo día y horario)
         </label>
         {error && (
@@ -235,7 +235,7 @@ function EditorBloqueos({ sesion, fecha, mios, onListo, onError }) {
         )}
         <div className="flex flex-wrap gap-2">
           <button disabled={guardando || f.canchas.length === 0}
-            className="h-12 flex-1 rounded-xl bg-[#C9822B] px-4 font-bold text-white hover:bg-[#a8691d] disabled:bg-apagado disabled:text-gris">
+            className="h-12 flex-1 rounded-xl bg-mant px-4 font-bold text-white hover:bg-mant-oscuro disabled:bg-apagado disabled:text-gris">
             {guardando ? 'Guardando…' : f.canchas.length === 0 ? 'Elegí al menos una cancha' : editando ? 'Guardar cambios' : 'Bloquear'}
           </button>
           {editando && (

@@ -52,7 +52,7 @@ export default function ElegirCancha({ sesion, reserva, onElegir, onVolver, onSl
             <button
               key={n}
               onClick={() => onElegir(n)}
-              className="flex min-h-13 items-center justify-between rounded-xl border-[1.5px] border-borde bg-white px-4 text-tinta transition hover:border-verde"
+              className="flex min-h-13 items-center justify-between rounded-xl border-[1.5px] border-borde bg-superficie px-4 text-tinta transition hover:border-verde"
             >
               <span className="text-[17px] font-bold">Cancha {n}</span>
               <span className="text-sm font-bold text-verde">Elegir ›</span>

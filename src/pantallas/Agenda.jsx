@@ -65,8 +65,8 @@ export default function Agenda({ sesion, seleccion, setSeleccion, onElegirHorari
                     activo
                       ? 'border-verde bg-verde text-white'
                       : d.habilitado
-                        ? 'border-borde bg-white text-tinta'
-                        : 'border-dashed border-borde bg-white text-gris'
+                        ? 'border-borde bg-superficie text-tinta'
+                        : 'border-dashed border-borde bg-superficie text-gris'
                   }`}
                 >
                   <span className="text-[15px] font-bold">{etiquetaDia(d.fecha, i)}</span>
@@ -87,7 +87,7 @@ export default function Agenda({ sesion, seleccion, setSeleccion, onElegirHorari
               onClick={() => setSeleccion({ fecha, tipo: valor })}
               aria-pressed={tipo === valor}
               className={`min-h-11 flex-1 rounded-lg text-[15px] font-bold transition ${
-                tipo === valor ? 'bg-white text-tinta shadow-sm' : 'text-gris'
+                tipo === valor ? 'bg-superficie text-tinta shadow-sm' : 'text-gris'
               }`}
             >
               {texto}
@@ -100,7 +100,7 @@ export default function Agenda({ sesion, seleccion, setSeleccion, onElegirHorari
       {!disp && !error && fecha && <Cargando texto="Buscando canchas libres…" />}
 
       {disp && !disp.habilitado && (
-        <div className="flex gap-3 rounded-xl border border-dashed border-borde bg-white p-4 text-[15px] leading-snug">
+        <div className="flex gap-3 rounded-xl border border-dashed border-borde bg-superficie p-4 text-[15px] leading-snug">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="mt-0.5 shrink-0 text-azul" aria-hidden="true">
             <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" />
           </svg>
@@ -112,7 +112,7 @@ export default function Agenda({ sesion, seleccion, setSeleccion, onElegirHorari
       )}
 
       {disp?.habilitado && disp.slots.length === 0 && (
-        <div className="rounded-xl border border-borde bg-white p-4 text-[15px] text-gris">
+        <div className="rounded-xl border border-borde bg-superficie p-4 text-[15px] text-gris">
           No quedan turnos para este día.
         </div>
       )}
@@ -133,7 +133,7 @@ export default function Agenda({ sesion, seleccion, setSeleccion, onElegirHorari
                   className={`flex min-h-14 flex-col items-center justify-center gap-px rounded-xl border-[1.5px] px-1 py-1.5 transition ${
                     deshabilitado
                       ? 'border-apagado bg-apagado text-gris'
-                      : 'border-borde bg-white text-tinta hover:border-verde'
+                      : 'border-borde bg-superficie text-tinta hover:border-verde'
                   }`}
                 >
                   <span className="text-[17px] font-bold">{s.hora}</span>

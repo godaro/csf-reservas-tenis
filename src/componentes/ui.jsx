@@ -41,8 +41,8 @@ export function Volver({ children, onClick }) {
 export function Aviso({ tipo = 'info', children }) {
   const estilos = {
     info: 'bg-azul-claro text-azul',
-    alerta: 'bg-[#fff4e5] border border-[#f2d3a6] text-[#4a3a22]',
-    error: 'bg-[#fdecea] border border-[#f5c2bd] text-error',
+    alerta: 'bg-alerta border border-alerta-borde text-alerta-texto',
+    error: 'bg-error-fondo border border-error-borde text-error',
   }
   return (
     <div role={tipo === 'error' ? 'alert' : undefined} className={`rounded-xl px-4 py-3 text-[15px] leading-snug ${estilos[tipo]}`}>
@@ -67,7 +67,7 @@ export function Campo({ id, label, ...props }) {
       <input
         id={id}
         {...props}
-        className="h-12 rounded-xl border-[1.5px] border-borde bg-white px-3.5 text-base text-tinta outline-none focus:border-verde"
+        className="h-12 rounded-xl border-[1.5px] border-borde bg-superficie px-3.5 text-base text-tinta outline-none focus:border-verde"
       />
     </div>
   )

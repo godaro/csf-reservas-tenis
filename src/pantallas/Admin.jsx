@@ -47,7 +47,7 @@ function lineaResumen(r) {
 
 function Tarjeta({ titulo, sub, children }) {
   return (
-    <section className="flex flex-col gap-3 rounded-2xl border border-borde bg-white p-4">
+    <section className="flex flex-col gap-3 rounded-2xl border border-borde bg-superficie p-4">
       <div className="flex flex-col gap-0.5">
         <h2 className="text-lg font-bold">{titulo}</h2>
         {sub && <p className="text-[14px] leading-snug text-gris">{sub}</p>}
@@ -58,7 +58,7 @@ function Tarjeta({ titulo, sub, children }) {
 }
 
 const BOTON = 'h-11 rounded-xl bg-verde px-5 font-bold text-white hover:bg-verde-oscuro disabled:opacity-60'
-const BOTON_2 = 'h-11 rounded-xl border-[1.5px] border-borde bg-white px-4 font-bold text-tinta hover:border-verde disabled:opacity-60'
+const BOTON_2 = 'h-11 rounded-xl border-[1.5px] border-borde bg-superficie px-4 font-bold text-tinta hover:border-verde disabled:opacity-60'
 
 // ---------------------------------------------------------------------
 // Excel semanal
@@ -174,9 +174,9 @@ function CargarExcel({ sesion, resumen, onListo, onError }) {
           )}
 
           {bajasManuales.length > 0 && (
-            <div className="flex flex-col gap-2 rounded-xl border border-[#f2d3a6] bg-[#fff4e5] p-3">
-              <span className="text-[15px] font-bold text-[#4a3a22]">Altas manuales que no vienen en el listado ({bajasManuales.length})</span>
-              <span className="text-[14px] text-[#4a3a22]">Se dan de baja. Tildá a quien quieras mantener (por ejemplo, si pagó después de que se sacó el listado).</span>
+            <div className="flex flex-col gap-2 rounded-xl border border-alerta-borde bg-alerta p-3">
+              <span className="text-[15px] font-bold text-alerta-texto">Altas manuales que no vienen en el listado ({bajasManuales.length})</span>
+              <span className="text-[14px] text-alerta-texto">Se dan de baja. Tildá a quien quieras mantener (por ejemplo, si pagó después de que se sacó el listado).</span>
               {bajasManuales.map((b) => (
                 <label key={b.nro} className="flex min-h-11 cursor-pointer items-center gap-3 text-[15px]">
                   <input type="checkbox" className="size-5 accent-verde" checked={mantener.includes(b.nro)}
@@ -313,7 +313,7 @@ function Entrada({ id, label, ...props }) {
     <div className="flex flex-col gap-1.5">
       <label htmlFor={id} className="text-[13px] font-bold">{label}</label>
       <input id={id} {...props}
-        className="h-11 rounded-xl border-[1.5px] border-borde bg-white px-3 text-base outline-none focus:border-verde" />
+        className="h-11 rounded-xl border-[1.5px] border-borde bg-superficie px-3 text-base outline-none focus:border-verde" />
     </div>
   )
 }
@@ -356,7 +356,7 @@ function BuscarSocio({ sesion, refrescar, onListo, onError }) {
   return (
     <Tarjeta titulo="Buscar socio" sub="Por nombre, apellido, número de socio o DNI.">
       <input aria-label="Buscar socio" placeholder="Ej. Pérez, 41400 o 24760115" value={q} onChange={(e) => setQ(e.target.value)}
-        className="h-11 rounded-xl border-[1.5px] border-borde bg-white px-3 text-base outline-none focus:border-verde" />
+        className="h-11 rounded-xl border-[1.5px] border-borde bg-superficie px-3 text-base outline-none focus:border-verde" />
       {res === null ? <Cargando /> : (
         <>
           {sinBusqueda && <span className="text-[13px] font-bold text-gris">Altas manuales que todavía no llegaron en el listado</span>}
@@ -372,12 +372,12 @@ function BuscarSocio({ sesion, refrescar, onListo, onError }) {
                     Socio {s.nro} · DNI {s.dni}{s.prueba ? ' · de prueba' : ''}{s.carnet ? '' : ' · sin carnet'}
                     {s.origen === 'manual' && s.carnet ? ` · alta manual ${s.alta_manual_en ? momento(s.alta_manual_en) : ''}` : ''}
                   </span>
-                  <span className={`truncate text-[13px] ${s.mail_ok ? 'text-gris' : 'text-[#9a3412]'}`}>
+                  <span className={`truncate text-[13px] ${s.mail_ok ? 'text-gris' : 'text-advertencia'}`}>
                     {s.email ? (s.mail_ok ? s.email : `${s.email} (incompleto)`) : 'Sin mail'}
                   </span>
                 </span>
                 {s.carnet ? (
-                  <button onClick={() => baja(s)} className="min-h-11 shrink-0 rounded-lg border-[1.5px] border-error px-3 text-sm font-bold text-error hover:bg-[#fdf3f2]">
+                  <button onClick={() => baja(s)} className="min-h-11 shrink-0 rounded-lg border-[1.5px] border-error px-3 text-sm font-bold text-error hover:bg-error-claro">
                     Dar de baja
                   </button>
                 ) : (

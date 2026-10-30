@@ -163,9 +163,9 @@ function Marco({ children, sesion, onSalir, tabs, tabActiva, onTab, ancho, panel
   return (
     <div className="flex min-h-dvh flex-col">
       <div className="flex h-1 shrink-0" aria-hidden="true">
-        <div className="flex-1 bg-verde" /><div className="flex-1 bg-white" /><div className="flex-1 bg-azul" />
+        <div className="flex-1 bg-verde" /><div className="flex-1 bg-[#fff]" /><div className="flex-1 bg-azul" />
       </div>
-      <header className="border-b border-borde bg-white">
+      <header className="border-b border-borde bg-superficie">
         <div className={`mx-auto flex items-center gap-3 px-5 py-3 ${ancho ? 'max-w-6xl' : 'max-w-xl'}`}>
           <img src="/escudo.svg" alt="Escudo del Club San Fernando" width="34" height="42" className="h-[42px] w-[34px] shrink-0" />
           <div className="flex min-w-0 flex-1 flex-col">
@@ -184,7 +184,7 @@ function Marco({ children, sesion, onSalir, tabs, tabActiva, onTab, ancho, panel
       <main className={`mx-auto w-full flex-1 px-5 pt-5 ${tabs ? 'pb-[calc(7rem+env(safe-area-inset-bottom))]' : 'pb-10'} ${ancho ? 'max-w-6xl' : 'max-w-xl'}`}>{children}</main>
 
       {tabs && (
-        <nav aria-label="Secciones" className="fixed inset-x-0 bottom-0 z-20 border-t border-borde bg-white pb-[env(safe-area-inset-bottom)]">
+        <nav aria-label="Secciones" className="fixed inset-x-0 bottom-0 z-20 border-t border-borde bg-superficie pb-[env(safe-area-inset-bottom)]">
           <div className="mx-auto flex max-w-xl">
             {tabs.map(([id, texto, Icono]) => (
               <button key={id} onClick={() => onTab(id)} aria-current={tabActiva === id ? 'page' : undefined}

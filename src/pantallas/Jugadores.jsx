@@ -123,7 +123,7 @@ export default function Jugadores({ sesion, reserva, onJugadores, onConfirmada, 
       <Volver onClick={onVolver}>Cambiar cancha</Volver>
       <Titulo sub={`${fechaCorta(fecha)} · ${slot.hora} a ${hora(fin)} · Cancha ${canchaActual}`}>¿Con quién jugás?</Titulo>
 
-      <div className="flex flex-col gap-2 rounded-xl border border-borde bg-white p-3.5">
+      <div className="flex flex-col gap-2 rounded-xl border border-borde bg-superficie p-3.5">
         <span className="text-[13px] font-bold text-gris">
           Jugadores ({elegidos.length + 1} de {necesarios + 1})
         </span>
@@ -159,7 +159,7 @@ export default function Jugadores({ sesion, reserva, onJugadores, onConfirmada, 
                   aria-label={puede ? `Sumar a ${f.nombre}` : `${f.nombre}: ${NOTAS[f.estado]}`}
                   className={`inline-flex min-h-11 items-center gap-1.5 rounded-full border-[1.5px] px-3.5 text-[15px] font-bold transition ${
                     puede
-                      ? 'border-verde bg-white text-verde hover:bg-verde-claro'
+                      ? 'border-verde bg-superficie text-verde hover:bg-verde-claro'
                       : 'border-apagado bg-apagado text-gris line-through decoration-1'
                   }`}
                 >
@@ -183,7 +183,7 @@ export default function Jugadores({ sesion, reserva, onJugadores, onConfirmada, 
       {!completo && reglas && (
         reglas.permitido ? (
           formInv ? (
-            <form onSubmit={agregarInvitado} className="flex flex-col gap-3 rounded-xl border border-borde bg-white p-3.5">
+            <form onSubmit={agregarInvitado} className="flex flex-col gap-3 rounded-xl border border-borde bg-superficie p-3.5">
               <span className="text-[15px] font-bold">{invitados.length ? 'Otro invitado no socio' : 'Invitado no socio'}</span>
               <div className="grid grid-cols-2 gap-2">
                 <Campo id="inv-nombre" label="Nombre" autoComplete="off" value={formInv.nombre}
@@ -226,12 +226,12 @@ export default function Jugadores({ sesion, reserva, onJugadores, onConfirmada, 
                 disabled={!puede}
                 onClick={() => alternar(s)}
                 className={`flex min-h-15 items-center justify-between gap-3 rounded-xl border-[1.5px] px-3.5 py-2 text-left ${
-                  puede ? 'border-borde bg-white text-tinta hover:border-verde' : 'border-apagado bg-apagado text-gris'
+                  puede ? 'border-borde bg-superficie text-tinta hover:border-verde' : 'border-apagado bg-apagado text-gris'
                 }`}
               >
                 <span className="flex flex-col gap-0.5">
                   <span className="text-base font-bold">{s.nombre}</span>
-                  <span className={`text-[13px] ${s.estado === 'ok' ? 'text-gris' : 'text-[#9a3412]'}`}>
+                  <span className={`text-[13px] ${s.estado === 'ok' ? 'text-gris' : 'text-advertencia'}`}>
                     Socio {s.nro}{elegido(s.nro) ? ' · Ya está en el partido' : s.estado !== 'ok' ? ` · ${NOTAS[s.estado]}` : ''}
                   </span>
                 </span>
@@ -245,8 +245,8 @@ export default function Jugadores({ sesion, reserva, onJugadores, onConfirmada, 
       {error && !error.ocupada && <Aviso tipo="error">{error.texto}</Aviso>}
 
       {error?.ocupada && (
-        <div role="alert" className="flex flex-col gap-3 rounded-xl border border-[#f2d3a6] bg-[#fff4e5] p-4">
-          <span className="text-[15px] leading-snug text-[#4a3a22]">
+        <div role="alert" className="flex flex-col gap-3 rounded-xl border border-alerta-borde bg-alerta p-4">
+          <span className="text-[15px] leading-snug text-alerta-texto">
             <strong className="block">Te ganaron la cancha {canchaActual}</strong>
             {alternativas === null
               ? 'Buscando otras canchas libres a la misma hora…'
@@ -258,21 +258,21 @@ export default function Jugadores({ sesion, reserva, onJugadores, onConfirmada, 
             <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
               {alternativas.map((n) => (
                 <button key={n} onClick={() => confirmar(n)} disabled={enviando}
-                  className="min-h-12 rounded-xl border-[1.5px] border-verde bg-white font-bold text-verde hover:bg-verde-claro disabled:opacity-60">
+                  className="min-h-12 rounded-xl border-[1.5px] border-verde bg-superficie font-bold text-verde hover:bg-verde-claro disabled:opacity-60">
                   Cancha {n}
                 </button>
               ))}
             </div>
           )}
           {alternativas?.length === 0 && (
-            <button onClick={onOcupada} className="min-h-11 self-start font-bold text-[#8a4b00] underline">
+            <button onClick={onOcupada} className="min-h-11 self-start font-bold text-alerta-fuerte underline">
               Ver otros horarios
             </button>
           )}
         </div>
       )}
 
-      <div className="fixed inset-x-0 bottom-[calc(68px+env(safe-area-inset-bottom))] z-10 border-t border-borde bg-white px-5 py-3">
+      <div className="fixed inset-x-0 bottom-[calc(68px+env(safe-area-inset-bottom))] z-10 border-t border-borde bg-superficie px-5 py-3">
         <div className="mx-auto max-w-xl">
           <BotonPrincipal disabled={!completo || enviando || error?.ocupada} onClick={() => confirmar()}>
             {enviando ? 'Reservando…' : error?.ocupada ? 'Elegí otra cancha' : completo ? 'Confirmar reserva'
