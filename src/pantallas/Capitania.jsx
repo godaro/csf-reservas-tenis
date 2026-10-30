@@ -238,7 +238,7 @@ export default function Capitania({ sesion, onError }) {
         {grilla ? (
           <div className={`grid gap-0.5 transition-opacity ${panelVisible ? '' : 'opacity-40'}`}
             style={{ gridTemplateColumns: `76px repeat(${grilla.horas.length}, minmax(24px, 1fr))`, minWidth: 820 }}>
-            <span />
+            <span className="sticky -left-3 z-10 -ml-3 bg-white pl-3" />
             {grilla.horas.map((h, i) => (
               <span key={h} className="whitespace-nowrap pb-1 text-[11px] font-bold text-gris">{i % 2 === 0 ? h : ''}</span>
             ))}
@@ -502,7 +502,8 @@ function rangos(ns) {
 function Fila({ fila, horas, onReservada, onFoco, enBloque }) {
   return (
     <>
-      <span className="flex h-8 items-center text-[13px] font-bold">Cancha {fila.cancha}</span>
+      {/* Fija al hacer scroll horizontal (en el celular la grilla no entra entera) */}
+      <span className="sticky -left-3 z-10 -ml-3 flex h-8 items-center bg-white pl-3 text-[13px] font-bold shadow-[6px_0_6px_-6px_rgba(20,33,26,0.25)]">Cancha {fila.cancha}</span>
       {fila.celdas.map((c, i) => {
         const info = { cancha: fila.cancha, hora: horas[i], estado: c.estado, detalle: c.detalle, reserva_id: c.reserva_id }
         const color = enBloque(fila.cancha, horas[i], c) ? `${COLOR_FOCO[c.estado]} cursor-pointer` : COLOR[c.estado]
