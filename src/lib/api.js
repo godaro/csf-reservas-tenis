@@ -48,7 +48,8 @@ export const api = {
       ...(invitado ? { p_invitado: invitado } : {}),
     }),
   invitadosReglas: (token, inicio, fin) => rpc('invitados_reglas', { p_token: token, p_inicio: inicio, p_fin: fin }),
-  capitaniaInvitadoPago: (token, id, pagado) => rpc('capitania_invitado_pago', { p_token: token, p_id: id, p_pagado: pagado }),
+  capitaniaInvitadoPago: (token, invitadoId, pagado) =>
+    rpc('capitania_invitado_pago', { p_token: token, p_invitado: invitadoId, p_pagado: pagado }),
   misReservas: (token) => rpc('mis_reservas', { p_token: token }),
   miPerfil: (token) => rpc('mi_perfil', { p_token: token }),
   actualizarMiEmail: (token, email) => rpc('actualizar_mi_email', { p_token: token, p_email: email }),

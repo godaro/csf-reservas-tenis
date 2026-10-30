@@ -42,9 +42,10 @@ export default function Confirmada({ resumen, onVerMis }) {
           </div>
         ))}
       </dl>
-      {resumen.conInvitado && (
+      {resumen.invitados > 0 && (
         <p className="rounded-xl bg-[#fff4e5] px-4 py-3 text-[15px] leading-snug text-[#4a3a22]">
-          <strong>Tu invitado paga el día en la Capitanía de Tenis</strong> antes de entrar a la cancha.
+          <strong>{resumen.invitados === 1 ? 'Tu invitado paga en Caja' : 'Cada invitado paga en Caja'}</strong> y
+          presenta el comprobante en la Casilla de Tenis antes de jugar.
         </p>
       )}
       <a

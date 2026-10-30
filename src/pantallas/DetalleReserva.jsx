@@ -96,27 +96,29 @@ export default function DetalleReserva({ sesion, id, onCerrar, onCambio, onError
               </ul>
             </section>
 
-            {r.invitado && (
+            {r.invitados?.length > 0 && (
               <section className="flex flex-col gap-2">
-                <span className="text-[13px] font-bold text-gris">Invitado no socio</span>
-                <div className={`flex items-center justify-between gap-3 rounded-xl border px-3 py-2 ${r.invitado.pagado ? 'border-borde' : 'border-[#f2d3a6] bg-[#fff4e5]'}`}>
-                  <span className="flex flex-col">
-                    <span className="text-[15px] font-bold">{r.invitado.nombre}</span>
-                    <span className="text-[13px] text-gris">
-                      DNI {r.invitado.dni} · {r.invitado.veces_mes === 1 ? 'primera vez este mes' : `${r.invitado.veces_mes} veces este mes`}
+                <span className="text-[13px] font-bold text-gris">{r.invitados.length === 1 ? 'Invitado no socio' : 'Invitados no socios'}</span>
+                {r.invitados.map((inv) => (
+                  <div key={inv.id} className={`flex items-center justify-between gap-3 rounded-xl border px-3 py-2 ${inv.pagado ? 'border-borde' : 'border-[#f2d3a6] bg-[#fff4e5]'}`}>
+                    <span className="flex flex-col">
+                      <span className="text-[15px] font-bold">{inv.nombre}</span>
+                      <span className="text-[13px] text-gris">
+                        DNI {inv.dni} · {inv.veces_mes === 1 ? 'primera vez este mes' : `${inv.veces_mes} veces este mes`}
+                      </span>
+                      <span className={`text-[13px] font-bold ${inv.pagado ? 'text-verde' : 'text-[#8a4b00]'}`}>
+                        {inv.pagado ? 'Presentó el comprobante' : 'A cobrar'}
+                      </span>
                     </span>
-                    <span className={`text-[13px] font-bold ${r.invitado.pagado ? 'text-verde' : 'text-[#8a4b00]'}`}>
-                      {r.invitado.pagado ? 'Pagó el día' : 'A cobrar'}
-                    </span>
-                  </span>
-                  {r.estado === 'activa' && (
-                    <button disabled={trabajando} className={r.invitado.pagado ? BOTON_2 : BOTON}
-                      onClick={() => hacer(() => api.capitaniaInvitadoPago(sesion.token, r.id, !r.invitado.pagado),
-                        r.invitado.pagado ? `${r.invitado.nombre}: se marcó como no pagado.` : `${r.invitado.nombre} pagó el día.`)}>
-                      {r.invitado.pagado ? 'Deshacer' : 'Marcar que pagó'}
-                    </button>
-                  )}
-                </div>
+                    {r.estado === 'activa' && (
+                      <button disabled={trabajando} className={inv.pagado ? BOTON_2 : BOTON}
+                        onClick={() => hacer(() => api.capitaniaInvitadoPago(sesion.token, inv.id, !inv.pagado),
+                          inv.pagado ? `${inv.nombre}: se marcó como no pagado.` : `${inv.nombre} pagó.`)}>
+                        {inv.pagado ? 'Deshacer' : 'Marcar que pagó'}
+                      </button>
+                    )}
+                  </div>
+                ))}
               </section>
             )}
 

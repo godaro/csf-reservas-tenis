@@ -26,10 +26,11 @@ export default function Jugadores({ sesion, reserva, onJugadores, onConfirmada, 
   // Si te ganan la cancha: otras canchas libres en el mismo horario (null = no aplica)
   const [alternativas, setAlternativas] = useState(null)
 
-  // Invitado no socio: uno por partido, solo en las franjas que define el Club
+  // Invitados no socios: pueden completar el partido (siempre juega al menos el socio que reserva),
+  // solo en las franjas que define el Club
   const [reglas, setReglas] = useState(null) // { permitido, texto }
   const [formInv, setFormInv] = useState(null) // { nombre, apellido, dni } mientras se carga
-  const invitado = elegidos.find((e) => e.invitado)
+  const invitados = elegidos.filter((e) => e.invitado)
   useEffect(() => {
     api.invitadosReglas(sesion.token, slot.inicio, fin).then((r) => {
       setReglas(r)
@@ -46,8 +47,9 @@ export default function Jugadores({ sesion, reserva, onJugadores, onConfirmada, 
     const dni = formInv.dni.replace(/\D/g, '')
     if (!nombre || !apellido) return setError({ texto: 'Completá nombre y apellido del invitado.' })
     if (dni.length < 6) return setError({ texto: 'El DNI del invitado no es válido.' })
+    if (invitados.some((i) => i.datos.dni === dni)) return setError({ texto: 'Ya sumaste a un invitado con ese DNI.' })
     setError(null)
-    setElegidos([...elegidos, { nro: 'invitado', invitado: true, nombre: `${nombre} ${apellido}`, datos: { nombre, apellido, dni } }])
+    setElegidos([...elegidos, { nro: `invitado-${dni}`, invitado: true, nombre: `${nombre} ${apellido}`, datos: { nombre, apellido, dni } }])
     setFormInv(null)
   }
 
@@ -91,12 +93,12 @@ export default function Jugadores({ sesion, reserva, onJugadores, onConfirmada, 
     setEnviando(true)
     try {
       await api.reservar(sesion.token, n, slot.inicio, tipo,
-        elegidos.filter((e) => !e.invitado).map((e) => e.nro), invitado ? invitado.datos : null)
+        elegidos.filter((e) => !e.invitado).map((e) => e.nro), invitados.length ? invitados.map((i) => i.datos) : null)
       onConfirmada({
         fecha, cancha: n, tipo,
         rango: `${slot.hora} a ${hora(fin)}`,
         jugadores: elegidos.map((e) => (e.invitado ? `${e.nombre} (invitado)` : e.nombre)),
-        conInvitado: !!invitado,
+        invitados: invitados.length,
       })
     } catch (e) {
       if (e.codigo === 'SESION') return onError(e)
@@ -178,11 +180,11 @@ export default function Jugadores({ sesion, reserva, onJugadores, onConfirmada, 
           value={q} onChange={(e) => setQ(e.target.value)} autoComplete="off" />
       )}
 
-      {!completo && !invitado && reglas && (
+      {!completo && reglas && (
         reglas.permitido ? (
           formInv ? (
             <form onSubmit={agregarInvitado} className="flex flex-col gap-3 rounded-xl border border-borde bg-white p-3.5">
-              <span className="text-[15px] font-bold">Invitado no socio</span>
+              <span className="text-[15px] font-bold">{invitados.length ? 'Otro invitado no socio' : 'Invitado no socio'}</span>
               <div className="grid grid-cols-2 gap-2">
                 <Campo id="inv-nombre" label="Nombre" autoComplete="off" value={formInv.nombre}
                   onChange={(e) => setFormInv({ ...formInv, nombre: e.target.value })} />
@@ -191,7 +193,7 @@ export default function Jugadores({ sesion, reserva, onJugadores, onConfirmada, 
               </div>
               <Campo id="inv-dni" label="DNI (sin puntos)" inputMode="numeric" autoComplete="off" value={formInv.dni}
                 onChange={(e) => setFormInv({ ...formInv, dni: e.target.value })} />
-              <p className="text-[13px] leading-snug text-gris">Paga el día en la Capitanía de Tenis antes de jugar. Uno por partido.</p>
+              <p className="text-[13px] leading-snug text-gris">Paga en Caja y presenta el comprobante en la Casilla de Tenis antes de jugar.</p>
               <div className="flex gap-2">
                 <button className="min-h-11 rounded-xl bg-verde px-4 text-[15px] font-bold text-white hover:bg-verde-oscuro">Sumar invitado</button>
                 <button type="button" onClick={() => setFormInv(null)} className="min-h-11 rounded-xl px-3 text-[15px] font-bold text-gris">Cancelar</button>
