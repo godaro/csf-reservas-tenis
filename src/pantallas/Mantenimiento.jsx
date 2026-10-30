@@ -104,7 +104,7 @@ export default function Mantenimiento({ sesion, onIngresar, onError, aviso }) {
 
       {!sesion && !ingresando && (
         <section className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-borde bg-white p-4">
-          <span className="text-[15px]">¿Sos el encargado de mantenimiento? Ingresá para bloquear canchas.</span>
+          <span className="text-[15px]">¿Necesitás modificar canchas para mantenimiento?</span>
           <button onClick={() => setIngresando(true)} className="min-h-11 rounded-xl bg-verde px-5 font-bold text-white hover:bg-verde-oscuro">
             Ingresar
           </button>
