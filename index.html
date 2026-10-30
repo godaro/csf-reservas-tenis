@@ -14,6 +14,10 @@
     <meta name="theme-color" content="#09582D" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#18221d" media="(prefers-color-scheme: dark)" />
     <meta name="color-scheme" content="light dark" />
+    <script>
+      // Tema elegido a mano (claro / oscuro); se aplica antes de pintar para que no parpadee
+      try { var t = localStorage.getItem('csf-tema'); if (t === 'claro' || t === 'oscuro') document.documentElement.dataset.tema = t } catch (e) {}
+    </script>
     <!-- SEO y vista previa al compartir (vite.config.js genera una versión por ruta) -->
     <title>Reservas de Tenis · Club San Fernando</title>
     <meta name="description" content="Reservá las canchas de tenis del Club San Fernando desde el celular. Exclusivo para socios con carnet de tenis." />

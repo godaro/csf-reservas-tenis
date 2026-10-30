@@ -45,9 +45,10 @@
   color-scheme: light;
 }
 
-/* Modo oscuro: sigue la configuración del celular o la compu */
+/* Modo oscuro: sigue la configuración del dispositivo, salvo que el usuario elija claro u oscuro
+   con el botón del encabezado (atributo data-tema en <html>) */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-tema="claro"]) {
     color-scheme: dark;
     --color-fondo: #0f1613;
     --color-superficie: #18221d;
@@ -81,6 +82,40 @@
     --color-wa: #4cc47e;
     --color-wa-claro: #183224;
   }
+}
+:root[data-tema="oscuro"] {
+    color-scheme: dark;
+    --color-fondo: #0f1613;
+    --color-superficie: #18221d;
+    --color-tinta: #e6ece8;
+    --color-gris: #a2aea7;
+    --color-borde: #2f3b35;
+    --color-apagado: #232e28;
+    --color-verde: #2f8f5b;
+    --color-verde-oscuro: #3aa56b;
+    --color-verde-claro: #1d3327;
+    --color-azul: #4f72b8;
+    --color-azul-claro: #1c2840;
+    --color-error: #e5534b;
+    --color-alerta: #2d2316;
+    --color-alerta-suave: #261e14;
+    --color-alerta-borde: #5c4526;
+    --color-alerta-texto: #f1dcc0;
+    --color-alerta-fuerte: #f0a95b;
+    --color-advertencia: #f39a6b;
+    --color-error-fondo: #381c1a;
+    --color-error-claro: #2e1918;
+    --color-error-borde: #6b2c27;
+    --color-reservada: #3f7a57;
+    --color-reservada-foco: #57a079;
+    --color-reservada-borde: #6cb38a;
+    --color-bloqueada-foco: #7392d0;
+    --color-azul-claro-foco: #2b3c5c;
+    --color-mant: #c9822b;
+    --color-mant-oscuro: #e09a45;
+    --color-mant-claro: #33261a;
+    --color-wa: #4cc47e;
+    --color-wa-claro: #183224;
 }
 
 html,

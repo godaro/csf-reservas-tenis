@@ -12,6 +12,7 @@ import Mantenimiento from './pantallas/Mantenimiento'
 import { Aviso } from './componentes/ui'
 import { JUGADORES_EXTRA } from './lib/fechas'
 import MiMail from './componentes/MiMail'
+import BotonTema from './componentes/BotonTema'
 import { evento, vista } from './lib/analitica'
 
 export default function App() {
@@ -170,11 +171,12 @@ function Marco({ children, sesion, onSalir, tabs, tabActiva, onTab, ancho, panel
           <img src="/escudo.svg" alt="Escudo del Club San Fernando" width="34" height="42" className="h-[42px] w-[34px] shrink-0" />
           <div className="flex min-w-0 flex-1 flex-col">
             <span className="text-[11px] font-bold tracking-[0.12em] text-verde">CLUB SAN FERNANDO{panel === 'mantenimiento' ? ' · MANTENIMIENTO' : panel === 'admin' ? ' · ADMINISTRACIÓN' : panel ? ' · CAPITANÍA' : ''}</span>
-            <span className="font-display text-[22px] font-semibold leading-tight">Reservas de Tenis</span>
+            <span className="whitespace-nowrap font-display text-[19px] font-semibold leading-tight min-[400px]:text-[22px]">Reservas de Tenis</span>
           </div>
+          <BotonTema />
           {sesion && (
             <div className="flex flex-col items-end">
-              <span className="max-w-36 truncate text-[13px] text-gris">{sesion.nombre}</span>
+              <span className="max-w-28 truncate text-[13px] sm:max-w-36 text-gris">{sesion.nombre}</span>
               <button onClick={onSalir} className="min-h-8 text-[13px] font-bold text-verde">Salir</button>
             </div>
           )}
