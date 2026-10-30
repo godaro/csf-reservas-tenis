@@ -166,7 +166,7 @@ function Marco({ children, sesion, onSalir, tabs, tabActiva, onTab, ancho, panel
         </div>
       </header>
 
-      <main className={`mx-auto w-full flex-1 px-5 pt-5 ${tabs ? 'pb-28' : 'pb-10'} ${ancho ? 'max-w-6xl' : 'max-w-xl'}`}>{children}</main>
+      <main className={`mx-auto w-full flex-1 px-5 pt-5 ${tabs ? 'pb-[calc(7rem+env(safe-area-inset-bottom))]' : 'pb-10'} ${ancho ? 'max-w-6xl' : 'max-w-xl'}`}>{children}</main>
 
       {tabs && (
         <nav aria-label="Secciones" className="fixed inset-x-0 bottom-0 z-20 border-t border-borde bg-white pb-[env(safe-area-inset-bottom)]">

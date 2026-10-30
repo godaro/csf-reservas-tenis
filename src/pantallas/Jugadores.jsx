@@ -272,7 +272,7 @@ export default function Jugadores({ sesion, reserva, onJugadores, onConfirmada, 
         </div>
       )}
 
-      <div className="fixed inset-x-0 bottom-[68px] z-10 border-t border-borde bg-white px-5 py-3">
+      <div className="fixed inset-x-0 bottom-[calc(68px+env(safe-area-inset-bottom))] z-10 border-t border-borde bg-white px-5 py-3">
         <div className="mx-auto max-w-xl">
           <BotonPrincipal disabled={!completo || enviando || error?.ocupada} onClick={() => confirmar()}>
             {enviando ? 'Reservando…' : error?.ocupada ? 'Elegí otra cancha' : completo ? 'Confirmar reserva'
