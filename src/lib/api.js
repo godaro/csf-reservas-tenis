@@ -81,6 +81,14 @@ export const api = {
     rpc('capitania_mover_cancha', { p_token: token, p_id: id, p_cancha: cancha, p_motivo: motivo || null }),
   capitaniaReemplazar: (token, id, sale, entra, motivo) =>
     rpc('capitania_reemplazar_jugador', { p_token: token, p_id: id, p_sale: sale, p_entra: entra, p_motivo: motivo || null }),
+  // Mantenimiento (/mantenimiento)
+  ocupacionDia: (fecha) => rpc('ocupacion_dia', { p_fecha: fecha }),
+  mantGuardar: (token, b, reemplaza = []) =>
+    rpc('mantenimiento_guardar_bloqueo', {
+      p_token: token, p_canchas: b.canchas, p_fecha: b.fecha, p_desde: b.desde, p_hasta: b.hasta,
+      p_semanal: b.semanal, p_detalle: b.detalle || null, p_reemplaza: reemplaza,
+    }),
+  mantBorrar: (token, ids) => rpc('mantenimiento_borrar_bloqueo', { p_token: token, p_ids: ids }),
   // Administración (/admin)
   adminResumen: (token) => rpc('admin_resumen', { p_token: token }),
   adminPrevisualizar: (token, filas) => rpc('admin_previsualizar_padron', { p_token: token, p_filas: filas }),
@@ -101,11 +109,12 @@ export const api = {
 const RUTA = window.location.pathname.replace(/\/+$/, '')
 export const ES_PANEL = RUTA === '/capitania'
 export const ES_ADMIN = RUTA === '/admin'
+export const ES_MANT = RUTA === '/mantenimiento'
 // Rol que corresponde a esta dirección
-export const ROL_RUTA = ES_ADMIN ? 'admin' : ES_PANEL ? 'capitania' : 'socio'
+export const ROL_RUTA = ES_MANT ? 'mantenimiento' : ES_ADMIN ? 'admin' : ES_PANEL ? 'capitania' : 'socio'
 
 // Sesión guardada en el dispositivo (separada para socio, Capitanía y Administración)
-const CLAVE = ES_ADMIN ? 'csf-tenis-sesion-admin' : ES_PANEL ? 'csf-tenis-sesion-capitania' : 'csf-tenis-sesion'
+const CLAVE = ES_MANT ? 'csf-tenis-sesion-mantenimiento' : ES_ADMIN ? 'csf-tenis-sesion-admin' : ES_PANEL ? 'csf-tenis-sesion-capitania' : 'csf-tenis-sesion'
 
 export function leerSesion() {
   try {

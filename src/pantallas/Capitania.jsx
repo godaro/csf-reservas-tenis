@@ -5,7 +5,7 @@ import { Aviso, Cargando, Titulo } from '../componentes/ui'
 import DetalleReserva from './DetalleReserva'
 
 const MOTIVOS = ['Escuela de Tenis', 'Clases', 'Interclubes', 'Torneo interno', 'Mantenimiento', 'Lluvia', 'Otro']
-const HORAS = Array.from({ length: 29 }, (_, i) => {
+export const HORAS = Array.from({ length: 29 }, (_, i) => {
   const m = 8 * 60 + i * 30
   return `${String(Math.floor(m / 60)).padStart(2, '0')}:${m % 60 ? '30' : '00'}`
 })
@@ -15,6 +15,9 @@ const COLOR = {
   reservada: 'bg-[#9ccbae] border-[#9ccbae] cursor-pointer',
   bloqueada: 'bg-azul border-azul cursor-pointer',
 }
+// Bloqueos de mantenimiento: otro color, para distinguirlos de un vistazo
+const MANT = 'bg-[#C9822B] border-[#C9822B] cursor-pointer'
+const MANT_FOCO = 'bg-[#a8691d] border-[#a8691d]'
 // Mismo bloque bajo el mouse (todas sus celdas juntas)
 const COLOR_FOCO = {
   reservada: 'bg-[#5fa97c] border-[#3f8a5d]',
@@ -218,6 +221,7 @@ export default function Capitania({ sesion, onError }) {
         <span className="inline-flex items-center gap-1.5"><span className="size-3.5 rounded border border-borde bg-white" />Libre</span>
         <span className="inline-flex items-center gap-1.5"><span className="size-3.5 rounded bg-[#9ccbae]" />Reservada (tocá para ver o modificar)</span>
         <span className="inline-flex items-center gap-1.5"><span className="size-3.5 rounded bg-azul" />Bloqueada</span>
+        <span className="inline-flex items-center gap-1.5"><span className="size-3.5 rounded bg-[#C9822B]" />Mantenimiento</span>
         <span className="inline-flex items-center gap-1.5"><span className="size-3.5 rounded bg-[#9ccbae] shadow-[inset_0_-4px_0_#D0A966]" />Con invitado a cobrar</span>
       </div>
 
@@ -476,11 +480,11 @@ function medioHoraActual() {
 }
 
 // Junta los bloqueos con mismo motivo y horario en una sola fila
-function agrupar(bloqueos) {
+export function agrupar(bloqueos) {
   const grupos = new Map()
   for (const b of bloqueos) {
     const clave = `${b.motivo}|${b.desde}|${b.hasta}|${b.semanal}`
-    if (!grupos.has(clave)) grupos.set(clave, { clave, motivo: b.motivo, desde: b.desde, hasta: b.hasta, semanal: b.semanal, canchas: [], ids: [] })
+    if (!grupos.has(clave)) grupos.set(clave, { clave, motivo: b.motivo, mantenimiento: !!b.mantenimiento, desde: b.desde, hasta: b.hasta, semanal: b.semanal, canchas: [], ids: [] })
     grupos.get(clave).canchas.push(b.cancha)
     grupos.get(clave).ids.push(b.id)
   }
@@ -488,7 +492,7 @@ function agrupar(bloqueos) {
 }
 
 // [1,2,3,4,7,9,10] → "1–4, 7, 9–10"
-function rangos(ns) {
+export function rangos(ns) {
   const partes = []
   for (let i = 0; i < ns.length; i++) {
     let j = i
@@ -499,14 +503,16 @@ function rangos(ns) {
   return partes.join(', ')
 }
 
-function Fila({ fila, horas, onReservada, onFoco, enBloque }) {
+export function Fila({ fila, horas, onReservada, onFoco, enBloque }) {
   return (
     <>
       {/* Fija al hacer scroll horizontal (en el celular la grilla no entra entera) */}
       <span className="sticky -left-3 z-10 -ml-3 flex h-8 items-center bg-white pl-3 text-[13px] font-bold shadow-[6px_0_6px_-6px_rgba(20,33,26,0.25)]">Cancha {fila.cancha}</span>
       {fila.celdas.map((c, i) => {
         const info = { cancha: fila.cancha, hora: horas[i], estado: c.estado, detalle: c.detalle, reserva_id: c.reserva_id }
-        const color = enBloque(fila.cancha, horas[i], c) ? `${COLOR_FOCO[c.estado]} cursor-pointer` : COLOR[c.estado]
+        const foco = enBloque(fila.cancha, horas[i], c)
+        const color = c.mantenimiento ? (foco ? `${MANT_FOCO} cursor-pointer` : MANT)
+          : foco ? `${COLOR_FOCO[c.estado]} cursor-pointer` : COLOR[c.estado]
         return c.estado === 'reservada' ? (
           <button key={i} aria-label={`Cancha ${fila.cancha}, ${horas[i]}: ${c.detalle}`}
             onMouseEnter={() => onFoco(info)} onFocus={() => onFoco(info)}
@@ -521,7 +527,7 @@ function Fila({ fila, horas, onReservada, onFoco, enBloque }) {
   )
 }
 
-function Selector({ id, label, valor, setValor, opciones }) {
+export function Selector({ id, label, valor, setValor, opciones }) {
   return (
     <div className="flex flex-1 flex-col gap-1.5">
       <label htmlFor={id} className="text-[13px] font-bold">{label}</label>

@@ -32,10 +32,10 @@ export default function Login({ onIngresar, modo = 'socio' }) {
     <form onSubmit={ingresar} className="mx-auto flex w-full max-w-md flex-col gap-5 pt-2">
       <div className="flex flex-col gap-1.5">
         <h1 className="font-display text-4xl font-semibold leading-tight">
-          {modo === 'admin' ? 'Administración' : panel ? 'Panel de Capitanía' : 'Ingresá para reservar'}
+          {modo === 'mantenimiento' ? 'Ingreso del encargado' : modo === 'admin' ? 'Administración' : panel ? 'Panel de Capitanía' : 'Ingresá para reservar'}
         </h1>
         <p className="text-[15px] text-gris">
-          {modo === 'admin' ? 'Padrón de socios con carnet de tenis.' : panel ? 'Acceso exclusivo para la Capitanía de Tenis.' : 'Exclusivo para socios con carnet de tenis vigente.'}
+          {modo === 'mantenimiento' ? 'Para bloquear canchas por mantenimiento.' : modo === 'admin' ? 'Padrón de socios con carnet de tenis.' : panel ? 'Acceso exclusivo para la Capitanía de Tenis.' : 'Exclusivo para socios con carnet de tenis vigente.'}
         </p>
       </div>
       {panel ? (

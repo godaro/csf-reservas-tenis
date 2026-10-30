@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { api, configurado, ES_ADMIN, ES_PANEL, ROL_RUTA, guardarSesion, leerSesion } from './lib/api'
+import { api, configurado, ES_ADMIN, ES_MANT, ES_PANEL, ROL_RUTA, guardarSesion, leerSesion } from './lib/api'
 import Login from './pantallas/Login'
 import Agenda from './pantallas/Agenda'
 import ElegirCancha from './pantallas/ElegirCancha'
@@ -8,6 +8,7 @@ import Confirmada from './pantallas/Confirmada'
 import MisReservas from './pantallas/MisReservas'
 import Capitania from './pantallas/Capitania'
 import Admin from './pantallas/Admin'
+import Mantenimiento from './pantallas/Mantenimiento'
 import { Aviso } from './componentes/ui'
 import { JUGADORES_EXTRA } from './lib/fechas'
 import MiMail from './componentes/MiMail'
@@ -26,7 +27,8 @@ export default function App() {
   // Analytics: una "página" por pantalla (sin datos personales)
   const rolSesion = sesion && sesion.rol === ROL_RUTA ? sesion.rol : null
   useEffect(() => {
-    if (ES_ADMIN) vista(rolSesion ? '/admin' : '/admin/ingreso', 'Administración')
+    if (ES_MANT) vista(rolSesion ? '/mantenimiento/encargado' : '/mantenimiento', 'Mantenimiento')
+    else if (ES_ADMIN) vista(rolSesion ? '/admin' : '/admin/ingreso', 'Administración')
     else if (ES_PANEL) vista(rolSesion ? '/capitania' : '/capitania/ingreso', 'Panel de Capitanía')
     else if (!rolSesion) vista('/ingreso', 'Ingreso')
     else vista(...({
@@ -66,6 +68,19 @@ export default function App() {
         <Aviso tipo="alerta">
           Falta configurar la conexión con Supabase: copiá <code>.env.example</code> como <code>.env</code> y completá la URL y la clave pública del proyecto.
         </Aviso>
+      </Marco>
+    )
+  }
+
+  // Mantenimiento: la grilla es pública; el encargado ingresa para bloquear
+  if (ES_MANT) {
+    const valida = sesion && sesion.rol === 'mantenimiento' ? sesion : null
+    return (
+      <Marco sesion={valida} onSalir={salir} ancho panel="mantenimiento">
+        <Mantenimiento sesion={valida} onIngresar={(s) => {
+          if (s.rol !== 'mantenimiento') { api.logout(s.token).catch(() => {}); return 'Ese usuario no es el de mantenimiento.' }
+          guardarSesion(s); setSesion(s); return null
+        }} onError={onError} aviso={aviso} />
       </Marco>
     )
   }
@@ -144,7 +159,7 @@ export default function App() {
 }
 
 function Marco({ children, sesion, onSalir, tabs, tabActiva, onTab, ancho, panel }) {
-  if (panel) document.title = `${panel === 'admin' ? 'Administración' : 'Panel de Capitanía'} · Reservas de Tenis`
+  if (panel) document.title = `${panel === 'mantenimiento' ? 'Canchas · Mantenimiento' : panel === 'admin' ? 'Administración' : 'Panel de Capitanía'} · Reservas de Tenis`
   return (
     <div className="flex min-h-dvh flex-col">
       <div className="flex h-1 shrink-0" aria-hidden="true">
@@ -154,7 +169,7 @@ function Marco({ children, sesion, onSalir, tabs, tabActiva, onTab, ancho, panel
         <div className={`mx-auto flex items-center gap-3 px-5 py-3 ${ancho ? 'max-w-6xl' : 'max-w-xl'}`}>
           <img src="/escudo.svg" alt="Escudo del Club San Fernando" width="34" height="42" className="h-[42px] w-[34px] shrink-0" />
           <div className="flex min-w-0 flex-1 flex-col">
-            <span className="text-[11px] font-bold tracking-[0.12em] text-verde">CLUB SAN FERNANDO{panel === 'admin' ? ' · ADMINISTRACIÓN' : panel ? ' · CAPITANÍA' : ''}</span>
+            <span className="text-[11px] font-bold tracking-[0.12em] text-verde">CLUB SAN FERNANDO{panel === 'mantenimiento' ? ' · MANTENIMIENTO' : panel === 'admin' ? ' · ADMINISTRACIÓN' : panel ? ' · CAPITANÍA' : ''}</span>
             <span className="font-display text-[22px] font-semibold leading-tight">Reservas de Tenis</span>
           </div>
           {sesion && (

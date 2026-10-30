@@ -46,8 +46,10 @@ Horarios, ventana de habilitación, máximo de reservas (`max_reservas`) y separ
 16. Volver a desplegar la Edge Function `enviar-avisos` con el `index.ts` nuevo y **después** pegar y correr
     `supabase/migrations/20261028030000_capitania_editar_reserva.sql` (la Capitanía modifica reservas).
 17. Pegar y correr `supabase/migrations/20261029000000_invitados.sql` y después `20261030000000_invitados_varios.sql` (invitados no socios).
-18. Crear el usuario de Administración: `select crear_usuario_admin('admin', 'Administración', 'una-clave-temporal');`
-19. (Opcional, para probar) pegar y correr `supabase/seed_demo.sql`: crea socios ficticios.
+18. Pegar y correr `supabase/migrations/20261030010000_mantenimiento.sql` y crear el usuario del encargado:
+    `select crear_usuario_mantenimiento('mantenimiento', 'Mantenimiento', 'una-clave-temporal');`
+19. Crear el usuario de Administración: `select crear_usuario_admin('admin', 'Administración', 'una-clave-temporal');`
+20. (Opcional, para probar) pegar y correr `supabase/seed_demo.sql`: crea socios ficticios.
 
 Socios de prueba (número / DNI):
 
@@ -104,6 +106,13 @@ Instalación de la función (Supabase → **Edge Functions**):
    (sale de `select valor from config_privada where clave = 'avisos_clave';`).
 
 Ver cómo van: `select id, tipo, socio_nro, estado, intentos, error, creado from avisos order by id desc limit 50;`
+
+## Mantenimiento (`/mantenimiento`)
+
+- Grilla pública de ocupación del día (libre / en uso / bloqueada / mantenimiento), **sin nombres de socios**.
+- El encargado toca **Ingresar** (usuario `mantenimiento` + clave) y puede agregar, modificar y borrar **solo bloqueos de
+  mantenimiento** (motivo "Mantenimiento · detalle"). Si un bloqueo pisa una reserva no se guarda: lo resuelve la Capitanía.
+- Los bloqueos de mantenimiento se ven en ocre, también en el panel de Capitanía.
 
 ## Administración (`/admin`)
 
